@@ -1,6 +1,6 @@
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { workerData } from "node:worker_threads";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 
 const { privateKey, sender: agentCreator, id } = workerData;
 
