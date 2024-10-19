@@ -2,6 +2,8 @@ import { HandlerContext, run } from "@xmtp/message-kit";
 import { workerData } from "node:worker_threads";
 import { getDefiRecommendation } from "../lib/defi-saver-logic";
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
+import { decodeFunctionDataForCdp, getSavingData } from "../lib/saving-worker-utils";
+import { erc20Abi } from "viem";
 
 const { privateKey, sender: agentCreator, mpcData, address } = workerData;
 
@@ -41,11 +43,9 @@ run(
         );
       }
       //get recommendation from Brian
-      const { analysis, depositPrompt, swapPrompt } =
-        await getDefiRecommendation(context, amount);
-
+      const { analysis, depositPrompt, swapPrompt, isSwap } = await getDefiRecommendation(context, amount);
       //perform the swapPrompt transaction
-      if (swapPrompt !== "") {
+      if (swapPrompt !== "" && isSwap) {
         const swapResult = await brianCDPSDK.transact(swapPrompt);
 
         let hasBalance = false;
@@ -84,6 +84,6 @@ run(
         `Transaction executed successfully: ${depositResult[0].getTransactionLink()}`
       );
     }
-  },
+,
   { privateKey }
 );

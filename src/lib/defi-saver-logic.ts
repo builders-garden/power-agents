@@ -41,6 +41,7 @@ interface RecommendationResult {
   analysis: AnalysisResult;
   depositPrompt: string;
   swapPrompt: string;
+  isSwap: boolean;
 }
 
 const options = {
@@ -86,14 +87,16 @@ export function loadDefiData(filePath: string): DefiData {
 export async function getDefiRecommendation(userPreferencesPrompt: string, amount: number): Promise<RecommendationResult> {
   const defiData = loadDefiData('./defi-saver-data.json');
   const analysis = await analyzeDefiData(defiData, userPreferencesPrompt, amount);
+
+  const isSwap = analysis.chain.toLowerCase() === "base" && analysis.tokenSymbol.toLowerCase() !== "usdc";
   
+  const swapPrompt = analysis.chain.toLowerCase() === "base" 
+  ? (analysis.tokenSymbol.toLowerCase() === "usdc" ? "" : `swap ${amount} USDC to ${analysis.tokenSymbol} on Base`)
+  : `bridge ${amount} USDC to ${analysis.tokenSymbol} from Base to ${analysis.chain}`;
+
   const depositPrompt = `deposit ${amount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
 
-  const swapPrompt = analysis.chain.toLowerCase() === "base" 
-    ? (analysis.tokenSymbol.toLowerCase() === "usdc" ? "" : `swap ${amount} USDC to ${analysis.tokenSymbol} on Base`)
-    : `bridge ${amount} USDC to ${analysis.tokenSymbol} from Base to ${analysis.chain}`;
- 
-  return { analysis, swapPrompt, depositPrompt };
+  return { analysis, swapPrompt, depositPrompt, isSwap };
 }
 
 // Get transaction data
