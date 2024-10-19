@@ -57,7 +57,7 @@ export async function createAgent(
     [
       { type: "address", name: "_endpoint" },
       { type: "address", name: "_admin" },
-      { type: "address", name: "_factoryAdmin" }
+      { type: "address", name: "_factoryAdmin" },
     ],
     [l0EndpointAddress, addressAgentCreator, ADMIN_ADDRESS]
   ) as `0x${string}`;
@@ -95,7 +95,7 @@ export async function createAgent(
 
   await publicClient.waitForTransactionReceipt({ hash: tx });
 
-  console.log(`Agent deployed to ${factoryAddress} on chain ${chain.name}`);
+  console.log(`Agent deployed to ${result} on chain ${chain.name}`);
 
   return result as string;
 }
