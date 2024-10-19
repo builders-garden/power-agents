@@ -74,5 +74,5 @@ export async function createAgent(addressAgentCreator: `0x${string}`, chainId: n
 }
 
 export async function setupOAppContracts(srcChainId: number, dstChainId: number, contractAddress: `0x${string}`) {
-
+  //call setPeer on both contracts on both chains
 }
