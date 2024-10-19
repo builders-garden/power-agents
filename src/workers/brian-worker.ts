@@ -2,6 +2,7 @@ import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { ethers } from "ethers";
 import { workerData } from "node:worker_threads";
+import { getPreferredChain } from "../lib/supabase";
 
 const { privateKey, sender: agentCreator, mpcData } = workerData;
 
@@ -61,7 +62,7 @@ run(
       ).brianSDK.transact({
         prompt: promptWithoutQuotes,
         address: wallet.address,
-        chainId: "8453",
+        chainId: await getPreferredChain(sender.address),
       });
 
       const [data] = response;
@@ -72,6 +73,24 @@ run(
       await context.send(
         `Send "ok" to confirm your transaction. Any other message will cancel the operation.`
       );
+    }
+
+    if (command === "ask") {
+      const { prompt } = params;
+
+      if (!prompt) {
+        await context.send("You must provide a valid prompt.");
+        return;
+      }
+
+      const promptWithoutQuotes = prompt.replace(/"/g, "").replace(/“/g, "");
+
+      const response = await (brianCDPSDK as BrianCoinbaseSDK).brianSDK.ask({
+        prompt: promptWithoutQuotes,
+        kb: "public-knowledge-box",
+      });
+
+      await context.send(response.answer);
     }
   },
   { privateKey }

@@ -64,6 +64,23 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Ask",
+    triggers: ["@ask", "/ask"],
+    description: "Asks a question to Brian.",
+    commands: [
+      {
+        command: "/ask [prompt]",
+        description: "Asks a question to Brian.",
+        params: {
+          prompt: {
+            type: "string",
+            default: "",
+          },
+        },
+      },
+    ],
+  },
+  {
     name: "Recurring",
     triggers: ["@recurring", "/recurring"],
     description: "Creates a recurring transaction.",
@@ -138,6 +155,25 @@ export const commands: CommandGroup[] = [
           id: {
             type: "string",
             default: "",
+          },
+        },
+      },
+    ],
+  },
+  {
+    name: "Chain",
+    triggers: ["@chain", "/chain"],
+    description:
+      "Allows the user to change chain from base to polygon or viceversa.",
+    commands: [
+      {
+        command: "/chain [chain]",
+        description: "Switches the chain to the given one.",
+        params: {
+          chain: {
+            type: "string",
+            default: "base",
+            values: ["base", "polygon"],
           },
         },
       },

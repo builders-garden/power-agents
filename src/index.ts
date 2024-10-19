@@ -155,6 +155,23 @@ run(async (context: HandlerContext) => {
         }
       }
     }
+
+    if (command === "chain") {
+      const { chain } = params;
+
+      if (!chain || !["base", "polygon"].includes(chain)) {
+        await context.send(
+          "To switch to a different chain, you must provide the chain name. Available chains: base, polygon."
+        );
+        return;
+      }
+
+      await supabase
+        .from("preferences")
+        .upsert({ address: sender.address, chain });
+
+      await context.send("Chain preference updated successfully.");
+    }
   } catch (error) {
     console.error(`[🚨 new-message] error: ${error}`);
     await context.send(
