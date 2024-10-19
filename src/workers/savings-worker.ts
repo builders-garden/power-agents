@@ -53,9 +53,9 @@ run(
         while (!hasBalance) {
           const [balance] = await brianCDPSDK.brianSDK.transact({
             chainId:
-              analysis.chain === "base"
+              analysis.chain.toLowerCase() === "base"
                 ? "8453"
-                : analysis.chain === "polygon"
+                : analysis.chain.toLowerCase() === "polygon"
                 ? "137"
                 : "42161",
             prompt: `What is the ${analysis.toToken} balance of ${address}?`,
