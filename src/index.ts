@@ -41,11 +41,6 @@ run(async (context: HandlerContext) => {
       return;
     }
 
-    if (command === "gm" || text.toLowerCase() === "gm") {
-      await context.send("gm");
-      return;
-    }
-
     if (command === "new") {
       const { type, name } = params;
 
