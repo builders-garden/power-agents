@@ -6,7 +6,7 @@ import {
   getTransactionDataFromBrian,
 } from "../lib/defi-saver-logic.js";
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
-import { agentAbi } from "../lib/abi.js";
+import { AGENT_CONTRACT_ABI } from "../lib/abi.js";
 import {
   L0_CHAIN_ID_ARBITRUM,
   L0_CHAIN_ID_OPTIMISM,
@@ -138,7 +138,7 @@ run(
         const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
           contractAddress: agentContract, //TODO: change
           method: "send",
-          abi: agentAbi,
+          abi: AGENT_CONTRACT_ABI,
           args: sendArgs,
         });
       }

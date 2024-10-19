@@ -19,7 +19,7 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { agentAbi } from "./abi.js";
+import { AGENT_FACTORY_ABI, AGENT_CONTRACT_ABI } from "./abi.js";
 
 export async function createAgent(
   addressAgentCreator: `0x${string}`,
@@ -85,7 +85,7 @@ export async function createAgent(
   // Simulate the contract deployment
   const { request, result } = await publicClient.simulateContract({
     address: factoryAddress,
-    abi: agentAbi,
+    abi: AGENT_FACTORY_ABI,
     functionName: "deploy",
     args: [salt, initCode],
     account,
@@ -163,7 +163,7 @@ export async function setupOAppContracts(
   // Simulate the contract deployment
   const { request } = await publicClient.simulateContract({
     address: contractAddress,
-    abi: agentAbi,
+    abi: AGENT_CONTRACT_ABI,
     functionName: "init",
     args: [dstChainL0Id, contractAddress],
     account,
