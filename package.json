@@ -1,0 +1,32 @@
+{
+  "name": "xmtp-agents",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w & sleep 1 && nodemon --quiet dist/index.js",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@brian-ai/cdp-sdk": "^1.0.1",
+    "@supabase/supabase-js": "^2.45.5",
+    "@xmtp/message-kit": "latest",
+    "dotenv": "^16.4.5",
+    "ethers": "5.7.2",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.6",
+    "@types/node-cron": "^3.0.11",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
