@@ -1,0 +1,397 @@
+{
+    "status": "success",
+    "data": [
+      {
+        "chain": "Arbitrum",
+        "project": "aave-v3",
+        "symbol": "WBTC",
+        "tvlUsd": 235058438,
+        "apyBase": 0.02927,
+        "apy": 0.02927,
+        "pool": "7c5e69a4-2430-4fa2-b7cb-857f79d7d1bf",
+        "apyPct1D": 0.00096,
+        "apyPct7D": -0.00612,
+        "apyPct30D": -0.0025,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 84,
+          "binnedConfidence": 3
+        },
+        "mu": 0.22449,
+        "sigma": 0.01415,
+        "count": 801,
+        "outlier": false,
+        "underlyingTokens": {
+          "WBTC": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+        },
+        "apyMean30d": 0.03239,
+        "toToken": "0x078f358208685046a11C85e8ad32895DED33A249"
+      },
+      {
+        "chain": "Optimism",
+        "project": "aave-v3",
+        "symbol": "WBTC",
+        "tvlUsd": 40283319,
+        "apyBase": 0.02306,
+        "apy": 0.02306,
+        "pool": "e053590b-54f1-40aa-ae0d-14e701ca734c",
+        "apyPct1D": 0.00241,
+        "apyPct7D": -0.00013,
+        "apyPct30D": -0.00911,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 74,
+          "binnedConfidence": 2
+        },
+        "mu": 0.32013,
+        "sigma": 0.04137,
+        "count": 801,
+        "outlier": false,
+        "underlyingTokens": {
+          "WBTC": "0x68f180fcCe6836688e9084f035309E29Bf0A2095"
+        },
+        "apyMean30d": 0.0282,
+        "toToken": "0x078f358208685046a11C85e8ad32895DED33A249"
+      },
+      {
+        "chain": "Arbitrum",
+        "project": "aave-v3",
+        "symbol": "WETH",
+        "tvlUsd": 34440446,
+        "apyBase": 1.99385,
+        "apy": 1.99385,
+        "pool": "e302de4d-952e-4e18-9749-0a9dc86e98bc",
+        "apyPct1D": 0.0213,
+        "apyPct7D": 0.14973,
+        "apyPct30D": -0.00097,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Down",
+          "predictedProbability": 52,
+          "binnedConfidence": 1
+        },
+        "mu": 1.31644,
+        "sigma": 0.03854,
+        "count": 801,
+        "outlier": false,
+        "underlyingTokens": {
+          "WETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+        },
+        "apyMean30d": 1.92425,
+        "toToken": "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8"
+      },
+      {
+        "chain": "Arbitrum",
+        "project": "aave-v3",
+        "symbol": "USDC",
+        "tvlUsd": 15969356,
+        "apyBase": 5.46252,
+        "apy": 5.46252,
+        "pool": "d9fa8e14-0447-4207-9ae8-7810199dfa1f",
+        "apyPct1D": 1.04295,
+        "apyPct7D": 1.15881,
+        "apyPct30D": 2.90212,
+        "stablecoin": true,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 54,
+          "binnedConfidence": 1
+        },
+        "mu": 6.51779,
+        "sigma": 0.19295,
+        "count": 477,
+        "outlier": false,
+        "underlyingTokens": {
+          "USDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+        },
+        "apyMean30d": 4.24672,
+        "toToken": "0x625E7708f30cA75bfd92586e17077590C60eb4cD"
+      },
+      {
+        "chain": "Optimism",
+        "project": "aave-v3",
+        "symbol": "WETH",
+        "tvlUsd": 15895573,
+        "apyBase": 1.19297,
+        "apy": 1.19297,
+        "pool": "3e332a41-3a15-41bc-8d5c-438c09609349",
+        "apyPct1D": 0.08527,
+        "apyPct7D": -0.11383,
+        "apyPct30D": -0.71509,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 61,
+          "binnedConfidence": 1
+        },
+        "mu": 1.56776,
+        "sigma": 0.05781,
+        "count": 801,
+        "outlier": false,
+        "underlyingTokens": {
+          "WETH": "0x4200000000000000000000000000000000000006"
+        },
+        "apyMean30d": 1.43883,
+        "toToken": "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8"
+      },
+      {
+        "chain": "Base",
+        "project": "aave-v3",
+        "symbol": "CBBTC",
+        "tvlUsd": 9239010,
+        "apyBase": 0.08128,
+        "apy": 0.08128,
+        "pool": "89bc7c4c-d71c-435c-ab28-56c803d51320",
+        "apyPct1D": 0.01434,
+        "apyPct7D": 0.07852,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 52,
+          "binnedConfidence": 1
+        },
+        "mu": 0.01017,
+        "sigma": 0.00118,
+        "count": 26,
+        "outlier": false,
+        "underlyingTokens": {
+          "cbETH": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf"
+        },
+        "apyMean30d": 0.00995,
+        "toToken": "0xBdb9300b7CDE636d9cD4AFF00f6F009fFBBc8EE6"
+      },
+      {
+        "chain": "Base",
+        "project": "aave-v3",
+        "symbol": "WETH",
+        "tvlUsd": 8640494,
+        "apyBase": 2.03266,
+        "apy": 2.03266,
+        "pool": "23405eee-97e7-4b8e-8625-19c3a36047e8",
+        "apyPct1D": 0.30676,
+        "apyPct7D": 0.15931,
+        "apyPct30D": 0.69017,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Down",
+          "predictedProbability": 55.00000000000001,
+          "binnedConfidence": 1
+        },
+        "mu": 1.25912,
+        "sigma": 0.05673,
+        "count": 223,
+        "outlier": false,
+        "underlyingTokens": {
+          "WETH": "0x4200000000000000000000000000000000000006"
+        },
+        "apyMean30d": 1.76955,
+        "toToken": "0xD4a0e0b9149BCee3C920d2E00b5dE09138fd8bb7"
+      },
+      {
+        "chain": "Base",
+        "project": "aave-v3",
+        "symbol": "USDC",
+        "tvlUsd": 8070954,
+        "apyBase": 3.65057,
+        "apy": 3.65057,
+        "pool": "7e0661bf-8cf3-45e6-9424-31916d4c7b84",
+        "apyPct1D": -8.18347,
+        "apyPct7D": -0.19759,
+        "apyPct30D": -0.65712,
+        "stablecoin": true,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 82,
+          "binnedConfidence": 3
+        },
+        "mu": 5.62929,
+        "sigma": 0.13581,
+        "count": 223,
+        "outlier": false,
+        "underlyingTokens": {
+          "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+        },
+        "apyMean30d": 4.6581,
+        "toToken": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB"
+      },
+      {
+        "chain": "Optimism",
+        "project": "aave-v3",
+        "symbol": "USDC",
+        "tvlUsd": 3754611,
+        "apyBase": 4.18603,
+        "apy": 4.18603,
+        "pool": "0758c3b8-4ffb-4176-b0a9-f446e367db46",
+        "apyPct1D": -0.39046,
+        "apyPct7D": -3.89123,
+        "apyPct30D": 1.08134,
+        "stablecoin": true,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 80,
+          "binnedConfidence": 3
+        },
+        "mu": 7.82963,
+        "sigma": 0.22145,
+        "count": 324,
+        "outlier": false,
+        "underlyingTokens": {
+          "USDC": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+        },
+        "apyMean30d": 5.07509,
+        "toToken": "0x625E7708f30cA75bfd92586e17077590C60eb4cD"
+      },
+      {
+        "chain": "Arbitrum",
+        "project": "compound-v3",
+        "symbol": "WETH",
+        "tvlUsd": 2243501,
+        "apyBase": 3.5712,
+        "apyReward": 0.36419,
+        "apy": 3.93539,
+        "rewardTokens": {
+          "0": "0x354A6dA3fcde098F8389cad84b0182725c6C91dE"
+        },
+        "pool": "be3d7cb9-f008-4050-8802-13ea505bcbdf",
+        "apyPct1D": -0.20125,
+        "apyPct7D": 1.25694,
+        "apyPct30D": 2.22567,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Stable/Up",
+          "predictedProbability": 71,
+          "binnedConfidence": 2
+        },
+        "mu": 6.92598,
+        "sigma": 1.52428,
+        "count": 104,
+        "outlier": false,
+        "underlyingTokens": {
+          "WETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+        },
+        "apyMean30d": 2.81962,
+        "toToken": "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486"
+      },
+      {
+        "chain": "Arbitrum",
+        "project": "compound-v3",
+        "symbol": "USDC",
+        "tvlUsd": 2096235,
+        "apyBase": 12.06941,
+        "apyReward": 1.01893,
+        "apy": 13.08835,
+        "rewardTokens": {
+          "0": "0x354A6dA3fcde098F8389cad84b0182725c6C91dE"
+        },
+        "pool": "d9c395b9-00d0-4426-a6b3-572a6dd68e54",
+        "apyPct1D": 8.63846,
+        "apyPct7D": 4.70156,
+        "apyPct30D": 9.19672,
+        "stablecoin": true,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Down",
+          "predictedProbability": 90,
+          "binnedConfidence": 3
+        },
+        "mu": 7.50998,
+        "sigma": 0.14203,
+        "count": 381,
+        "outlier": false,
+        "underlyingTokens": {
+          "USDC": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+        },
+        "apyMean30d": 6.19921,
+        "toToken": "0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf"
+      },
+      {
+        "chain": "Base",
+        "project": "compound-v3",
+        "symbol": "WETH",
+        "tvlUsd": 674311,
+        "apyBase": 1.45909,
+        "apyReward": 1.66924,
+        "apy": 3.12833,
+        "rewardTokens": {
+          "0": "0x9e1028F5F1D5eDE59748FFceE5532509976840E0"
+        },
+        "pool": "7993b97d-12c3-4a36-b6b6-5b37bac4f8ae",
+        "apyPct1D": -0.62624,
+        "apyPct7D": 0.07486,
+        "apyPct30D": -0.65171,
+        "stablecoin": false,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Down",
+          "predictedProbability": 52,
+          "binnedConfidence": 1
+        },
+        "mu": 4.07236,
+        "sigma": 0.07322,
+        "count": 381,
+        "outlier": false,
+        "underlyingTokens": {
+          "WETH": "0x4200000000000000000000000000000000000006"
+        },
+        "apyMean30d": 4.72115,
+        "toToken": "0x46e6b214b524310239732D51387075E0e70970bf"
+      },
+      {
+        "chain": "Optimism",
+        "project": "compound-v3",
+        "symbol": "USDC",
+        "tvlUsd": 485650,
+        "apyBase": 6.35973,
+        "apyReward": 1.56271,
+        "apy": 7.92244,
+        "rewardTokens": {
+          "0": "0x7e7d4467112689329f7E06571eD0E8CbAd4910eE"
+        },
+        "pool": "b828f0cb-853d-4b32-aebb-2e20d7fd70a8",
+        "apyPct1D": -0.23641,
+        "apyPct7D": 3.74879,
+        "apyPct30D": 2.73175,
+        "stablecoin": true,
+        "ilRisk": "no",
+        "exposure": "single",
+        "predictions": {
+          "predictedClass": "Down",
+          "predictedProbability": 52,
+          "binnedConfidence": 1
+        },
+        "mu": 5.03801,
+        "sigma": 0.07899,
+        "count": 105,
+        "outlier": false,
+        "underlyingTokens": {
+          "USDC": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+        },
+        "apyMean30d": 5.33883,
+        "toToken": "0x2e44e174f7D53F0212823acC11C01A11d58c5bCB"
+      }
+    ]
+  }
