@@ -2,7 +2,7 @@ import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { ethers } from "ethers";
 import { workerData } from "node:worker_threads";
-import { getPreferredChain } from "../lib/supabase";
+import { getPreferredChain } from "../lib/supabase.js";
 
 const { privateKey, sender: agentCreator, mpcData } = workerData;
 

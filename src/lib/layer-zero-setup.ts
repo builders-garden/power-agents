@@ -10,7 +10,7 @@ import {
   L0_ENDPOINT_ADDRESS_ARBITRUM,
   L0_ENDPOINT_ADDRESS_BASE,
   L0_ENDPOINT_ADDRESS_OPTIMISM,
-} from "./constants";
+} from "./constants.js";
 import {
   encodeAbiParameters,
   createPublicClient,
@@ -18,7 +18,7 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { agentAbi } from "./abi";
+import { agentAbi } from "./abi.js";
 
 export async function createAgent(
   addressAgentCreator: `0x${string}`,

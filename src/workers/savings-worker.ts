@@ -4,10 +4,13 @@ import {
   buildLayerZeroTransaction,
   getDefiRecommendation,
   getTransactionDataFromBrian,
-} from "../lib/defi-saver-logic";
+} from "../lib/defi-saver-logic.js";
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
-import { agentAbi } from "../lib/abi";
-import { L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_OPTIMISM } from "../lib/constants";
+import { agentAbi } from "../lib/abi.js";
+import {
+  L0_CHAIN_ID_ARBITRUM,
+  L0_CHAIN_ID_OPTIMISM,
+} from "../lib/constants.js";
 import { Options } from "@layerzerolabs/lz-v2-utilities";
 
 const {
