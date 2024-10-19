@@ -1,5 +1,6 @@
 import { base, optimism, arbitrum } from "viem/chains";
 import {
+  ADMIN_ADDRESS,
   AGENT_CONTRACT_INIT_CODE,
   AGENT_FACTORY_ADDRESS_ARBITRUM,
   AGENT_FACTORY_ADDRESS_BASE,
@@ -56,8 +57,9 @@ export async function createAgent(
     [
       { type: "address", name: "_endpoint" },
       { type: "address", name: "_admin" },
+      { type: "address", name: "_factoryAdmin" }
     ],
-    [l0EndpointAddress, addressAgentCreator]
+    [l0EndpointAddress, addressAgentCreator, ADMIN_ADDRESS]
   ) as `0x${string}`;
   const cleanEncodedData = encodedData.slice(2);
 
