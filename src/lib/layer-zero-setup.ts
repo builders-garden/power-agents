@@ -1,5 +1,5 @@
 import { base, optimism, arbitrum } from "viem/chains";
-import { AGENT_CONTRACT_INIT_CODE, AGENT_FACTORY_ADDRESS_ARBITRUM, AGENT_FACTORY_ADDRESS_BASE, AGENT_FACTORY_ADDRESS_OPTIMISM, L0_ENDPOINT_ADDRESS_ARBITRUM, L0_ENDPOINT_ADDRESS_BASE, L0_ENDPOINT_ADDRESS_OPTIMISM } from "./constants";
+import { AGENT_CONTRACT_INIT_CODE, AGENT_FACTORY_ADDRESS_ARBITRUM, AGENT_FACTORY_ADDRESS_BASE, AGENT_FACTORY_ADDRESS_OPTIMISM, L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_BASE, L0_CHAIN_ID_OPTIMISM, L0_ENDPOINT_ADDRESS_ARBITRUM, L0_ENDPOINT_ADDRESS_BASE, L0_ENDPOINT_ADDRESS_OPTIMISM } from "./constants";
 import { encodeAbiParameters, createPublicClient, createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from "viem/accounts";
 import { agentAbi } from "./abi";
@@ -74,5 +74,74 @@ export async function createAgent(addressAgentCreator: `0x${string}`, chainId: n
 }
 
 export async function setupOAppContracts(srcChainId: number, dstChainId: number, contractAddress: `0x${string}`) {
-  //call setPeer on both contracts on both chains
+  // Get the chain based on the chain ID
+  let srcChain;
+  let dstChain;
+  let srcChainL0Id;
+  let dstChainL0Id;
+
+  switch (srcChainId) {
+    case base.id:
+      srcChain = base;
+      srcChainL0Id = L0_CHAIN_ID_BASE;
+      break;
+    case optimism.id:
+      srcChain = optimism;
+      srcChainL0Id = L0_CHAIN_ID_OPTIMISM;
+      break;
+    case arbitrum.id:
+      srcChain = arbitrum;
+      srcChainL0Id = L0_CHAIN_ID_ARBITRUM;
+      break;
+    default:
+      throw new Error(`Unsupported chain ID: ${srcChainId}`);
+  }
+
+  switch (dstChainId) {
+    case base.id:
+      dstChain = base;
+      dstChainL0Id = L0_CHAIN_ID_BASE;
+      break;
+    case optimism.id:
+      dstChain = optimism;
+      dstChainL0Id = L0_CHAIN_ID_OPTIMISM;
+      break;
+    case arbitrum.id:
+      dstChain = arbitrum;
+      dstChainL0Id = L0_CHAIN_ID_ARBITRUM;
+      break;
+    default:
+      throw new Error(`Unsupported chain ID: ${dstChainId}`);
+  }
+
+  // Deploy the agent contract
+  const publicClient = createPublicClient({
+    chain:srcChain,
+    transport: http(),
+  })
+  // Get the private key from the environment variable
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+
+  // Create a wallet client
+  const walletClient = createWalletClient({
+    chain:srcChain,
+    account,
+    transport: http(),
+  })
+
+  // Simulate the contract deployment
+  const { request } = await publicClient.simulateContract({
+    address: contractAddress,
+    abi: agentAbi,
+    functionName: 'init',
+    args: [dstChainL0Id, contractAddress],
+    account
+  })
+  // Execute the deployment through the factory using create3
+  await walletClient.writeContract(request);
+
+  console.log(`Agent contract initialized on both ${srcChain.name} and ${dstChain.name}`)
+
 }
+
+//TODO: add ABI, set pvt key
