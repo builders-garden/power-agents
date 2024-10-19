@@ -102,6 +102,48 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Limit",
+    triggers: ["@limit", "/limit"],
+    description: "Creates a limit transaction.",
+    commands: [
+      {
+        command: "/limit [prompt] [token] [price]",
+        description: "Creates a limit transaction.",
+        params: {
+          prompt: {
+            type: "string",
+            default: "",
+          },
+          token: {
+            type: "string",
+            default: "",
+          },
+          price: {
+            type: "number",
+            default: 0,
+          },
+        },
+      },
+    ],
+  },
+  {
+    name: "Stop limit",
+    triggers: ["@stop-limit", "/stop-limit"],
+    description: "Removes a limit transaction.",
+    commands: [
+      {
+        command: "/stop-limit [id]",
+        description: "Removes a limit transaction.",
+        params: {
+          id: {
+            type: "string",
+            default: "",
+          },
+        },
+      },
+    ],
+  },
+  {
     name: "Info",
     triggers: ["@info", "/info"],
     description: "Shows information about the bot.",
