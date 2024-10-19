@@ -11,6 +11,7 @@ import {
 import { supabase } from "./lib/supabase.js";
 import { agentsEmitter } from "./agents-emitter.js";
 import { startExistingAgents } from "./utils.js";
+import { createAgent } from "./lib/layer-zero-setup.js";
 
 const bots: string[] = [];
 
@@ -96,10 +97,22 @@ run(async (context: HandlerContext) => {
       });
 
       const mpcData = brianCDPSDK.exportWallet();
-
       const defaultAddress = await brianCDPSDK.getDefaultAddress();
-
       const privateKey = defaultAddress.export();
+      let agentContract;
+
+      if (type === "savings") {
+        // deploy agent contract
+        const chainIds = [8453, 42161, 10];
+
+        for (const chainId of chainIds) {
+          agentContract = await createAgent(
+            defaultAddress.getId() as `0x${string}`,
+            chainId,
+            defaultAddress.getId() as `0x${string}`
+          );
+        }
+      }
 
       const newAgent = await supabase
         .from("agents")
@@ -110,6 +123,7 @@ run(async (context: HandlerContext) => {
           group: context.group.id,
           agentType: type,
           mpcData,
+          agentContract: agentContract,
         })
         .select("*")
         .single();

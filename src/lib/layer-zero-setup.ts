@@ -1,10 +1,30 @@
 import { base, optimism, arbitrum } from "viem/chains";
-import { AGENT_CONTRACT_INIT_CODE, AGENT_FACTORY_ADDRESS_ARBITRUM, AGENT_FACTORY_ADDRESS_BASE, AGENT_FACTORY_ADDRESS_OPTIMISM, L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_BASE, L0_CHAIN_ID_OPTIMISM, L0_ENDPOINT_ADDRESS_ARBITRUM, L0_ENDPOINT_ADDRESS_BASE, L0_ENDPOINT_ADDRESS_OPTIMISM } from "./constants";
-import { encodeAbiParameters, createPublicClient, createWalletClient, http } from 'viem'
+import {
+  AGENT_CONTRACT_INIT_CODE,
+  AGENT_FACTORY_ADDRESS_ARBITRUM,
+  AGENT_FACTORY_ADDRESS_BASE,
+  AGENT_FACTORY_ADDRESS_OPTIMISM,
+  L0_CHAIN_ID_ARBITRUM,
+  L0_CHAIN_ID_BASE,
+  L0_CHAIN_ID_OPTIMISM,
+  L0_ENDPOINT_ADDRESS_ARBITRUM,
+  L0_ENDPOINT_ADDRESS_BASE,
+  L0_ENDPOINT_ADDRESS_OPTIMISM,
+} from "./constants";
+import {
+  encodeAbiParameters,
+  createPublicClient,
+  createWalletClient,
+  http,
+} from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { agentAbi } from "./abi";
 
-export async function createAgent(addressAgentCreator: `0x${string}`, chainId: number, salt:`0x${string}`) {
+export async function createAgent(
+  addressAgentCreator: `0x${string}`,
+  chainId: number,
+  salt: `0x${string}`
+) {
   // Get the factory address and L0 endpoint address based on the chain ID
   let factoryAddress: `0x${string}`;
   let l0EndpointAddress: `0x${string}`;
@@ -42,38 +62,47 @@ export async function createAgent(addressAgentCreator: `0x${string}`, chainId: n
   const cleanEncodedData = encodedData.slice(2);
 
   // Get the init code for the agent contract
-  const initCode = AGENT_CONTRACT_INIT_CODE + cleanEncodedData as `0x${string}`;
+  const initCode = (AGENT_CONTRACT_INIT_CODE +
+    cleanEncodedData) as `0x${string}`;
 
   // Deploy the agent contract
   const publicClient = createPublicClient({
     chain,
     transport: http(),
-  })
+  });
   // Get the private key from the environment variable
-  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
 
   // Create a wallet client
   const walletClient = createWalletClient({
     chain,
     account,
     transport: http(),
-  })
+  });
 
   // Simulate the contract deployment
-  const { request } = await publicClient.simulateContract({
+  const { request, result } = await publicClient.simulateContract({
     address: factoryAddress,
     abi: agentAbi,
-    functionName: 'deploy',
+    functionName: "deploy",
     args: [salt, initCode],
-    account
-  })
+    account,
+  });
   // Execute the deployment through the factory using create3
-  await walletClient.writeContract(request);
+  const tx = await walletClient.writeContract(request);
 
-  console.log(`Agent deployed to ${factoryAddress} on chain ${chain.name}`)
+  await publicClient.waitForTransactionReceipt({ hash: tx });
+
+  console.log(`Agent deployed to ${factoryAddress} on chain ${chain.name}`);
+
+  return result as string;
 }
 
-export async function setupOAppContracts(srcChainId: number, dstChainId: number, contractAddress: `0x${string}`) {
+export async function setupOAppContracts(
+  srcChainId: number,
+  dstChainId: number,
+  contractAddress: `0x${string}`
+) {
   // Get the chain based on the chain ID
   let srcChain;
   let dstChain;
@@ -116,32 +145,33 @@ export async function setupOAppContracts(srcChainId: number, dstChainId: number,
 
   // Deploy the agent contract
   const publicClient = createPublicClient({
-    chain:srcChain,
+    chain: srcChain,
     transport: http(),
-  })
+  });
   // Get the private key from the environment variable
-  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
 
   // Create a wallet client
   const walletClient = createWalletClient({
-    chain:srcChain,
+    chain: srcChain,
     account,
     transport: http(),
-  })
+  });
 
   // Simulate the contract deployment
   const { request } = await publicClient.simulateContract({
     address: contractAddress,
     abi: agentAbi,
-    functionName: 'init',
+    functionName: "init",
     args: [dstChainL0Id, contractAddress],
-    account
-  })
+    account,
+  });
   // Execute the deployment through the factory using create3
   await walletClient.writeContract(request);
 
-  console.log(`Agent contract initialized on both ${srcChain.name} and ${dstChain.name}`)
-
+  console.log(
+    `Agent contract initialized on both ${srcChain.name} and ${dstChain.name}`
+  );
 }
 
 //TODO: add ABI, set pvt key
