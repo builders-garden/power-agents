@@ -42,6 +42,7 @@ interface RecommendationResult {
   depositPrompt: string;
   swapPrompt: string;
   isSwap: boolean;
+  destinationChain: string;
 }
 
 const options = {
@@ -96,7 +97,7 @@ export async function getDefiRecommendation(userPreferencesPrompt: string, amoun
 
   const depositPrompt = `deposit ${amount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
 
-  return { analysis, swapPrompt, depositPrompt, isSwap };
+  return { analysis, swapPrompt, depositPrompt, isSwap, destinationChain: analysis.chain };
 }
 
 // Get transaction data

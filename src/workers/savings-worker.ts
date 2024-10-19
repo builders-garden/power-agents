@@ -1,9 +1,12 @@
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { workerData } from "node:worker_threads";
-import { getDefiRecommendation } from "../lib/defi-saver-logic";
+import { buildLayerZeroTransaction, getDefiRecommendation, getTransactionDataFromBrian } from "../lib/defi-saver-logic";
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
 import { decodeFunctionDataForCdp, getSavingData } from "../lib/saving-worker-utils";
 import { erc20Abi } from "viem";
+import { agentAbi } from "../lib/abi";
+import { L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_OPTIMISM } from "../lib/constants";
+import { Options } from '@layerzerolabs/lz-v2-utilities';
 
 const { privateKey, sender: agentCreator, mpcData, address } = workerData;
 
@@ -42,10 +45,18 @@ run(
           "You must provide a textual description of your risk/return preference."
         );
       }
+      let l0Transaction;
       //get recommendation from Brian
-      const { analysis, depositPrompt, swapPrompt, isSwap } = await getDefiRecommendation(context, amount);
+      const { analysis, depositPrompt, swapPrompt, isSwap, destinationChain } = await getDefiRecommendation(context, amount);
       //perform the swapPrompt transaction
-      if (swapPrompt !== "" && isSwap) {
+      if (swapPrompt !== "" && isSwap) { //swap on Base and deposit on Base
+        const swapResult = await brianCDPSDK.transact(swapPrompt);
+        const depositResult = await brianCDPSDK.transact(depositPrompt);
+      }
+      if (swapPrompt === "" && !isSwap) { //deposit on Base
+        const depositResult = await brianCDPSDK.transact(depositPrompt);
+      }
+      if (swapPrompt !== "" && !isSwap) { //cross chain swap from Base and deposit on destination chain
         const swapResult = await brianCDPSDK.transact(swapPrompt);
 
         let hasBalance = false;
@@ -75,15 +86,45 @@ run(
           // wait 30 seconds
           await new Promise((resolve) => setTimeout(resolve, 30000));
         }
+
+        //prendere tx da brian
+        const {txData, txTo, txValues} = await getTransactionDataFromBrian(depositPrompt, address);
+
+        //encode messages: approve + deposit
+        const [l0Tx] = await buildLayerZeroTransaction(txData, txValues, txTo);
+
+        const messages = [l0Tx];
+
+        const dstEids = destinationChain.toLowerCase() === "arbitrum" ? [L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_ARBITRUM] : [L0_CHAIN_ID_OPTIMISM, L0_CHAIN_ID_OPTIMISM];
+        
+        const GAS_LIMIT = 1000000; // Gas limit for the executor
+        const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
+        
+        const options = Options.newOptions().addExecutorLzReceiveOption(GAS_LIMIT, MSG_VALUE);
+
+        //send args for cdp
+        const sendArgs = {
+          _dstEids: dstEids,
+          _msgType: "SEND",
+          _messages: messages,
+          _extraSendOptions: options,
+        };
+
+        //TODO: get address of the agent contract
+        const agentContractAddress = "0x0000000000000000000000000000000000000000";
+
+        //first message is the approve
+        const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
+          contractAddress: agentContractAddress, //TODO: change
+          method: "send",
+          abi: agentAbi,
+          args: sendArgs
+        });
       }
-
-      //perform the depositPrompt transaction using L0
-      const depositResult = await brianCDPSDK.transact(depositPrompt);
-
       await context.send(
-        `Transaction executed successfully: ${depositResult[0].getTransactionLink()}`
+        `Transaction executed successfully: ${l0Transaction!.getTransactionLink()}`
       );
     }
-,
+  },
   { privateKey }
 );
