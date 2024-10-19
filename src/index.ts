@@ -1,58 +1,25 @@
+import "dotenv/config";
+
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
 import { run, HandlerContext } from "@xmtp/message-kit";
-import "dotenv/config";
-import { agentsEmitter } from "./agents-emitter.js";
-import { supabase } from "./lib/supabase.js";
-import { startExistingAgents } from "./utils.js";
 import cron from "node-cron";
+
+import {
+  handleLimitTransactions,
+  handleRecurringTransactions,
+} from "./lib/cron.js";
+import { supabase } from "./lib/supabase.js";
+import { agentsEmitter } from "./agents-emitter.js";
+import { startExistingAgents } from "./utils.js";
 
 const bots: string[] = [];
 
 startExistingAgents().then(() => {
   // check recurring transactions every 2 minutes
-  cron.schedule("*/2 * * * *", async () => {
-    const { data: recurrings } = await supabase.from("recurring").select("*");
-
-    if (!recurrings) return;
-
-    const toBeExecuted = [];
-
-    for (const recurring of recurrings) {
-      if (recurring.lastExection < new Date().getTime() + recurring.interval) {
-        toBeExecuted.push(recurring);
-      }
-    }
-
-    for (const transaction of toBeExecuted) {
-      const { data: agentData } = await supabase
-        .from("agents")
-        .select("*")
-        .eq("id", transaction.agentId)
-        .single();
-
-      if (agentData) {
-        const brianCDPSDK = new BrianCoinbaseSDK({
-          brianApiKey: process.env.BRIAN_API_KEY!,
-          coinbaseApiKeyName: process.env.CDP_SDK_API_KEY_NAME,
-          coinbaseApiKeySecret: process.env.CDP_SDK_API_KEY_SECRET,
-        });
-
-        brianCDPSDK.importWallet(agentData.mpcData);
-
-        await brianCDPSDK.transact(transaction.command);
-
-        await supabase
-          .from("recurring")
-          .update({
-            lastExection: new Date().getTime(),
-          })
-          .eq("id", transaction.id);
-      }
-    }
-  });
+  cron.schedule("*/2 * * * *", handleRecurringTransactions);
 
   // check limit orders every 5 minutes
-  cron.schedule("*/5 * * * *", async () => {});
+  cron.schedule("*/5 * * * *", handleLimitTransactions);
 });
 
 run(async (context: HandlerContext) => {
@@ -69,7 +36,7 @@ run(async (context: HandlerContext) => {
 
     if (command === "info") {
       await context.send(
-        "I'm a bot that can create agents for you. To create a new agent, use the command /new [type] [name]. Available types: brian, savings, recurring, trending."
+        "I'm a bot that can create agents for you. To create a new agent, use the command /new [type] [name]. Available types: brian, savings, recurring, limit."
       );
       return;
     }
@@ -84,7 +51,7 @@ run(async (context: HandlerContext) => {
 
       if (!type) {
         await context.send(
-          "To create a new agent, you must provide the type of agent you want to create. Available types: brian, trader, recurring, trending."
+          "To create a new agent, you must provide the type of agent you want to create. Available types: brian, trader, recurring, limit."
         );
         return;
       }

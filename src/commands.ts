@@ -18,7 +18,7 @@ export const commands: CommandGroup[] = [
         params: {
           type: {
             type: "string",
-            values: ["brian", "savings", "recurring", "trending"],
+            values: ["brian", "savings", "recurring", "limit"],
             default: "",
           },
           name: {
