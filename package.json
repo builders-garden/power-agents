@@ -20,7 +20,8 @@
     "@xmtp/message-kit": "latest",
     "dotenv": "^16.4.5",
     "ethers": "5.7.2",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "viem": "^2.21.30"
   },
   "devDependencies": {
     "@types/node": "^22.7.6",
