@@ -10,7 +10,7 @@ export const handleRecurringTransactions = async () => {
 
   for (const recurring of recurrings) {
     if (
-      recurring.lastExection <
+      parseInt((recurring.lastExecution / 1000).toFixed(0)) <
       parseInt((new Date().getTime() / 1000).toFixed(0)) + recurring.interval
     ) {
       toBeExecuted.push(recurring);
