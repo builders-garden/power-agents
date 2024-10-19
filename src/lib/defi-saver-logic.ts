@@ -1,4 +1,6 @@
 import { BrianSDK } from "@brian-ai/sdk";
+import { encodeAbiParameters } from 'viem'
+
 
 import * as fs from 'fs';
 
@@ -40,6 +42,11 @@ interface AnalysisResult {
   explanation: string;
 }
 
+interface RecommendationResult {
+  analysis: AnalysisResult;
+  prompt: string;
+}
+
 const options = {
     apiUrl: process.env.BRIAN_API_URL!,
     apiKey: process.env.BRIAN_API_KEY!,
@@ -47,7 +54,7 @@ const options = {
   
 const brian = new BrianSDK(options);
 
-export async function analyzeDefiData(data: DefiData, preferences: UserPreferences): Promise<AnalysisResult> {
+export async function analyzeDefiData(data: DefiData, preferences: UserPreferences, amount: number): Promise<AnalysisResult> {
   // Filter and sort data based on user preferences
   const filteredData = filterAndSortData(data.data, preferences);
 
@@ -66,7 +73,7 @@ export async function analyzeDefiData(data: DefiData, preferences: UserPreferenc
     4. To Token
     5. A brief explanation of why this option is recommended, considering the user's preferences.
 
-    Format the response as a JSON object.
+    Format the response as JSON.
   `;
 
   const response = await brian.ask({
@@ -107,7 +114,53 @@ export function loadDefiData(filePath: string): DefiData {
 }
 
 // Add this new function to demonstrate usage
-export async function getDefiRecommendation(filePath: string, preferences: UserPreferences): Promise<AnalysisResult> {
-  const defiData = loadDefiData(filePath);
-  return await analyzeDefiData(defiData, preferences);
+export async function getDefiRecommendation(preferences: UserPreferences, amount: number): Promise<RecommendationResult> {
+  const defiData = loadDefiData('./defi-saver-data.json');
+  const analysis = await analyzeDefiData(defiData, preferences, amount);
+  
+  const prompt = `deposit ${amount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
+  
+  return { analysis, prompt };
 }
+
+// Get transaction data
+export async function getTransactionDataFromBrian(prompt: string, agentAddress: string){
+    //get prompt from txDataInput
+    const response = await brian.transact({
+        prompt: prompt,
+        address: agentAddress,
+    })
+
+    //array of txData
+    let txData: string[] = [];
+    let txValues: string[] = [];
+    let txTo: string[] = [];
+
+    //get length of steps
+    const txDataLength = response[0].data.steps!.length;
+
+    //push in the array
+    for (let i = 0; i < txDataLength; i++) {
+        txData.push(response[0].data.steps![i].data);
+        txValues.push(response[0].data.steps![i].value);
+        txTo.push(response[0].data.steps![i].to);
+    }
+
+    return {txData, txValues, txTo};
+}
+
+//Build Layer Zero transaction
+export async function buildLayerZeroTransaction(txData: string[], txValues: string[], txTo: string[]){
+    let l0Tx: `0x${string}`[] = [];
+    for (let i = 0; i < txData.length; i++) {
+        const encoded = encodeAbiParameters(
+            [{type: 'address', name: 'target'}, {type: 'bytes', name: 'callData'}, {type: 'uint256', name: 'value'}],
+            [txTo[i] as `0x${string}`, txData[i] as `0x${string}`, BigInt(txValues[i])]
+        );
+        l0Tx.push(encoded);
+    }
+    return l0Tx;
+}
+
+//TODO: add crosshchain swap/bridge before deposit
+//TODO: save on db the deposit
