@@ -110,6 +110,19 @@ run(async (context: HandlerContext) => {
         return;
       }
 
+      const { data: existingRecord } = await supabase
+        .from("records")
+        .select("*")
+        .eq("name", `${name}.poweragents.eth`)
+        .single();
+
+      if (existingRecord) {
+        await context.send(
+          `The name "${name}.poweragents.eth" is already taken. Please choose another name.`
+        );
+        return;
+      }
+
       const brianCDPSDK = new BrianCoinbaseSDK({
         brianApiKey: process.env.BRIAN_API_KEY!,
         coinbaseApiKeyName: process.env.CDP_SDK_API_KEY_NAME,
@@ -138,6 +151,16 @@ run(async (context: HandlerContext) => {
         })
         .select("*")
         .single();
+
+      await supabase.from("records").insert({
+        owner: sender.address,
+        name: `${name}.poweragents.eth`,
+        contenthash: "",
+        texts: "",
+        addresses: {
+          60: defaultAddress.getId() as `0x${string}`,
+        },
+      });
 
       agentsEmitter.emit("subscribe", {
         ...newAgent.data,
