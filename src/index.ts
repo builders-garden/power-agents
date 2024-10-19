@@ -11,7 +11,7 @@ import {
 import { supabase } from "./lib/supabase.js";
 import { agentsEmitter } from "./agents-emitter.js";
 import { startExistingAgents } from "./utils.js";
-import { createAgent } from "./lib/layer-zero-setup.js";
+import { createAgent, setupOAppContracts } from "./lib/layer-zero-setup.js";
 
 const bots: string[] = [];
 
@@ -102,6 +102,9 @@ run(async (context: HandlerContext) => {
       let agentContract;
 
       if (type === "savings") {
+        await context.send(
+          "Setting up savings agent... This may take a while, please wait."
+        );
         // deploy agent contract
         const chainIds = [8453, 42161, 10];
 
@@ -112,6 +115,18 @@ run(async (context: HandlerContext) => {
             defaultAddress.getId() as `0x${string}`
           );
         }
+
+        await context.send("LayerZero contracts deployed successfully.");
+        await context.send("Setting up connections...");
+
+        await setupOAppContracts(8453, 42161, agentContract! as `0x${string}`);
+        await setupOAppContracts(8453, 10, agentContract! as `0x${string}`);
+        await setupOAppContracts(10, 42161, agentContract! as `0x${string}`);
+        await setupOAppContracts(10, 8453, agentContract! as `0x${string}`);
+        await setupOAppContracts(42161, 8453, agentContract! as `0x${string}`);
+        await setupOAppContracts(42161, 10, agentContract! as `0x${string}`);
+
+        await context.send("Smart Contracts connected successfully.");
       }
 
       const newAgent = await supabase
