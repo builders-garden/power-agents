@@ -72,3 +72,7 @@ export async function createAgent(addressAgentCreator: `0x${string}`, chainId: n
 
   console.log(`Agent deployed to ${factoryAddress} on chain ${chain.name}`)
 }
+
+export async function setupOAppContracts(srcChainId: number, dstChainId: number, contractAddress: `0x${string}`) {
+
+}
