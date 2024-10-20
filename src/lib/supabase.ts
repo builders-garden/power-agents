@@ -46,17 +46,9 @@ export const getPreferredChain = async (address: string) => {
 };
 
 export const getDeposit = async (id: number) => {
-  const { data: deposit } = await supabase
-    .from("deposits")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const {
+    data: { chain, protocol, token, amount },
+  } = await supabase.from("deposits").select("*").eq("id", id).single();
 
-  const { data: agent } = await supabase
-    .from("agents")
-    .select("*")
-    .eq("id", deposit.agentId)
-    .single();
-
-  return { deposit, agent };
+  return { chain, protocol, token, amount };
 };
