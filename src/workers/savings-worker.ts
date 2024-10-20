@@ -66,7 +66,13 @@ run(
       const { analysis, depositPrompt, swapPrompt, isSwap, destinationChain } =
         await getDefiRecommendation(description, amount, agentContract);
 
-      await context.send(analysis.explanation);
+      await context.send(
+        analysis.projectName +
+          " " +
+          analysis.tokenSymbol +
+          " -- " +
+          analysis.explanation
+      );
 
       console.log("[savings-worker] depositPrompt", depositPrompt);
       console.log("[savings-worker] swapPrompt", swapPrompt);
@@ -157,6 +163,11 @@ run(
           txTo
         );
 
+        const publicClient = createPublicClient({
+          transport: http(),
+          chain: base,
+        });
+ƒ
         // const messages = [l0Tx];
 
         const dstEids = destinationChain.toLowerCase().includes("arbitrum")
@@ -178,6 +189,20 @@ run(
           _messages: messages,
           _extraSendOptions: options.toHex(),
         };
+
+        //quote fee
+        const quoteFee = await publicClient.readContract({
+          abi: AGENT_CONTRACT_ABI,
+          functionName: "quote",
+          address: agentContract,
+          args: [
+            sendArgs._dstEids.map((item) => Number(item)),
+            1,
+            sendArgs._messages,
+            sendArgs._extraSendOptions as `0x${string}`,
+            false,
+          ],
+        });
 
         console.log("[savings-worker] sendArgs", sendArgs);
 
@@ -208,11 +233,7 @@ run(
             sendArgs._messages,
             sendArgs._extraSendOptions as `0x${string}`,
           ],
-        });
-
-        const publicClient = createPublicClient({
-          transport: http(),
-          chain: base,
+          value: quoteFee.nativeFee,
         });
 
         await publicClient.waitForTransactionReceipt({ hash: l0Transaction });
