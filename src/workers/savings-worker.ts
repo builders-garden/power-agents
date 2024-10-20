@@ -11,11 +11,11 @@ import {
   L0_CHAIN_ID_OPTIMISM,
 } from "../lib/constants.js";
 import { Options } from "@layerzerolabs/lz-v2-utilities";
-import { privateKeyToAccount } from "viem/accounts";
-import { createPublicClient, createWalletClient, http } from "viem";
+import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { AGENT_CONTRACT_ABI } from "../lib/abi.js";
 import { supabase } from "../lib/supabase.js";
+import { Coinbase } from "@coinbase/coinbase-sdk";
 
 const {
   privateKey,
@@ -208,38 +208,38 @@ run(
         console.log("[savings-worker] sendArgs", sendArgs);
 
         //first message is the approve
-        // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
-        //   contractAddress: agentContract,
-        //   method: "send",
-        //   abi: AGENT_CONTRACT_ABI,
-        //   args: sendArgs,
-        //   amount: 0,
-        //   assetId: Coinbase.assets.Wei,
-        // });
-        const wallet = privateKeyToAccount(seed);
-
-        const walletClient = createWalletClient({
-          account: wallet,
-          chain: base,
-          transport: http(),
-        });
-
-        const l0Transaction = await walletClient.writeContract({
+        const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
+          contractAddress: agentContract,
+          method: "send",
           abi: AGENT_CONTRACT_ABI,
-          functionName: "send",
-          address: agentContract,
-          args: [
-            sendArgs._dstEids.map((item) => parseInt(item)),
-            parseInt(sendArgs._msgType),
-            sendArgs._messages,
-            sendArgs._extraSendOptions as `0x${string}`,
-          ],
-          value: quoteFee.nativeFee,
+          args: sendArgs,
+          amount: quoteFee.nativeFee,
+          assetId: Coinbase.assets.Wei,
         });
+        // const wallet = privateKeyToAccount(seed);
 
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash: l0Transaction,
-        });
+        // const walletClient = createWalletClient({
+        //   account: wallet,
+        //   chain: base,
+        //   transport: http(),
+        // });
+
+        // // const l0Transaction = await walletClient.writeContract({
+        // //   abi: AGENT_CONTRACT_ABI,
+        // //   functionName: "send",
+        // //   address: agentContract,
+        // //   args: [
+        // //     sendArgs._dstEids.map((item) => parseInt(item)),
+        // //     parseInt(sendArgs._msgType),
+        // //     sendArgs._messages,
+        // //     sendArgs._extraSendOptions as `0x${string}`,
+        // //   ],
+        // //   value: quoteFee.nativeFee,
+        // // });
+
+        // // const receipt = await publicClient.waitForTransactionReceipt({
+        // //   hash: l0Transaction,
+        // // });
 
         await supabase.from("deposits").insert({
           agentId: id,
