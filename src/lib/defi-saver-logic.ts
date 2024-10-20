@@ -125,7 +125,9 @@ export async function getDefiRecommendation(userPreferencesPrompt: string, amoun
   ? (analysis.tokenSymbol.toLowerCase() === "usdc" ? "" : `swap ${amount} USDC to ${analysis.tokenSymbol} on Base`)
   : `bridge ${amount} USDC to ${analysis.tokenSymbol} from Base to ${analysis.chain}`;
 
-  const depositPrompt = `deposit ${amount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
+  const newAmount = amount * 0.8;
+
+  const depositPrompt = `deposit ${newAmount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
 
   return { analysis, swapPrompt, depositPrompt, isSwap, destinationChain: analysis.chain.toLowerCase() };
 }
