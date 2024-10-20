@@ -250,7 +250,7 @@ run(
         });
 
         await context.send(
-          `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+          `Deposit transaction executed successfully: ${l0Transaction!.getTransactionLink()}`
         );
       }
     }
