@@ -103,7 +103,8 @@ export async function createAgent(
 export async function setupOAppContracts(
   srcChainId: number,
   dstChainId: number,
-  contractAddress: `0x${string}`
+  contractAddress: `0x${string}`,
+  paddedContractAddress: `0x${string}`
 ) {
   // Get the chain based on the chain ID
   let srcChain;
@@ -165,11 +166,16 @@ export async function setupOAppContracts(
     address: contractAddress,
     abi: AGENT_CONTRACT_ABI,
     functionName: "init",
-    args: [dstChainL0Id, contractAddress],
+    args: [dstChainL0Id, paddedContractAddress],
     account,
   });
   // Execute the deployment through the factory using create3
-  await walletClient.writeContract(request);
+  const txHash = await walletClient.writeContract({
+    ...request,
+    gas: request.gas ? request.gas + BigInt(100000) : BigInt(100000),
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash: txHash });
 
   console.log(
     `Agent contract initialized on both ${srcChain.name} and ${dstChain.name}`

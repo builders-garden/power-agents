@@ -11,7 +11,7 @@ import {
 import { supabase } from "./lib/supabase.js";
 import { agentsEmitter } from "./agents-emitter.js";
 import { startExistingAgents } from "./utils.js";
-import { bytesToHex, numberToBytes } from "viem";
+import { bytesToHex, numberToBytes, pad } from "viem";
 import { createAgent, setupOAppContracts } from "./lib/layer-zero-setup.js";
 
 const bots: string[] = [];
@@ -113,19 +113,49 @@ run(async (context: HandlerContext) => {
           agentContract = await createAgent(
             defaultAddress.getId() as `0x${string}`,
             chainId,
-            bytesToHex(numberToBytes(3), { size: 32 })
+            bytesToHex(numberToBytes(8), { size: 32 })
           );
         }
 
         await context.send("LayerZero contracts deployed successfully.");
         await context.send("Setting up connections...");
 
-        await setupOAppContracts(8453, 42161, agentContract! as `0x${string}`);
-        await setupOAppContracts(8453, 10, agentContract! as `0x${string}`);
-        await setupOAppContracts(10, 42161, agentContract! as `0x${string}`);
-        await setupOAppContracts(10, 8453, agentContract! as `0x${string}`);
-        await setupOAppContracts(42161, 8453, agentContract! as `0x${string}`);
-        await setupOAppContracts(42161, 10, agentContract! as `0x${string}`);
+        await setupOAppContracts(
+          8453,
+          42161,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
+        await setupOAppContracts(
+          8453,
+          10,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
+        await setupOAppContracts(
+          10,
+          42161,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
+        await setupOAppContracts(
+          10,
+          8453,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
+        await setupOAppContracts(
+          42161,
+          8453,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
+        await setupOAppContracts(
+          42161,
+          10,
+          agentContract! as `0x${string}`,
+          pad(agentContract! as `0x${string}`)
+        );
 
         await context.send("Smart Contracts connected successfully.");
       }
@@ -166,7 +196,7 @@ run(async (context: HandlerContext) => {
       bots.push(defaultAddress.getId().toLowerCase());
 
       await context.send(
-        `Your new agent is available at ${defaultAddress.getId()}!`
+        `Your new agent is available at ${name}.poweragents.eth!`
       );
       await context.send(
         `Add it to this group chat and start chatting with it.`
