@@ -64,6 +64,18 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Confirm",
+    triggers: ["@confirm", "/confirm"],
+    description: "Confirms a transaction.",
+    commands: [
+      {
+        command: "/confirm",
+        description: "Confirms a transaction.",
+        params: {},
+      },
+    ],
+  },
+  {
     name: "Ask",
     triggers: ["@ask", "/ask"],
     description: "Asks a question to Brian.",

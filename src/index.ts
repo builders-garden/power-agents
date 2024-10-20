@@ -11,21 +11,23 @@ import {
 import { supabase } from "./lib/supabase.js";
 import { agentsEmitter } from "./agents-emitter.js";
 import { startExistingAgents } from "./utils.js";
-import { bytesToHex, numberToBytes, pad } from "viem";
+import { bytesToHex, createPublicClient, http, numberToBytes, pad } from "viem";
 import { createAgent, setupOAppContracts } from "./lib/layer-zero-setup.js";
+import { mainnet } from "viem/chains";
 
 const bots: string[] = [];
 
-startExistingAgents().then(() => {
-  // check recurring transactions every 2 minutes
-  cron.schedule("*/2 * * * *", handleRecurringTransactions);
+startExistingAgents();
 
-  // check limit orders every 5 minutes
-  cron.schedule("*/5 * * * *", handleLimitTransactions);
-});
+// check recurring transactions every minute
+cron.schedule("* * * * *", handleRecurringTransactions);
+
+// check limit orders every 5 minutes
+cron.schedule("*/5 * * * *", handleLimitTransactions);
 
 run(async (context: HandlerContext) => {
   try {
+    console.log("[bot-worker] received a new message.");
     const {
       typeId,
       content: { content: text, command, params },
@@ -229,10 +231,20 @@ run(async (context: HandlerContext) => {
     if (command === "add") {
       const { address } = params;
 
+      let resolvedAddress = address;
+
+      if (!address.startsWith("0x") && address.includes(".poweragents.eth")) {
+        const publicClient = createPublicClient({
+          transport: http(),
+          chain: mainnet,
+        });
+        resolvedAddress = await publicClient.getEnsAddress({ name: address });
+      }
+
       if (context.group) {
-        await context.group.addMembers([address]);
-        if (!bots.includes(address.toLowerCase())) {
-          bots.push(address.toLowerCase());
+        await context.group.addMembers([resolvedAddress]);
+        if (!bots.includes(resolvedAddress.toLowerCase())) {
+          bots.push(resolvedAddress.toLowerCase());
         }
       }
     }

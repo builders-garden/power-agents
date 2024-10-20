@@ -5,6 +5,26 @@ export const supabase = createClient(
   process.env.SUPABASE_KEY!
 );
 
+export const getPreferredChainString = async (address: string) => {
+  const { data, error } = await supabase
+    .from("preferences")
+    .select("*")
+    .eq("address", address)
+    .single();
+
+  if (!data || error) {
+    await supabase
+      .from("preferences")
+      .insert({ address, chain: "base" })
+      .select("*")
+      .single();
+
+    return "base";
+  }
+
+  return data.chain;
+};
+
 export const getPreferredChain = async (address: string) => {
   const { data, error } = await supabase
     .from("preferences")

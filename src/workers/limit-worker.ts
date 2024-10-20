@@ -6,6 +6,7 @@ const { privateKey, sender: agentCreator, id } = workerData;
 
 run(
   async (context: HandlerContext) => {
+    console.log("[limit-worker] received a new message.");
     const {
       content: { content: text, command, params },
       sender,

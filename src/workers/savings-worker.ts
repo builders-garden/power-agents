@@ -23,6 +23,7 @@ const {
 
 run(
   async (context: HandlerContext) => {
+    console.log("[savings-worker] received a new message.");
     const {
       content: { content: text, command, params },
       sender,

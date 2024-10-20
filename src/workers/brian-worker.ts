@@ -2,7 +2,7 @@ import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
 import { HandlerContext, run } from "@xmtp/message-kit";
 import { ethers } from "ethers";
 import { workerData } from "node:worker_threads";
-import { getPreferredChain } from "../lib/supabase.js";
+import { getPreferredChain, getPreferredChainString } from "../lib/supabase.js";
 
 const { privateKey, sender: agentCreator, mpcData } = workerData;
 
@@ -10,6 +10,7 @@ const cache: Record<string, any> = { data: null };
 
 run(
   async (context: HandlerContext) => {
+    console.log("[brian-worker] received a new message.");
     const wallet = new ethers.Wallet(privateKey);
 
     const brianCDPSDK = new BrianCoinbaseSDK({
@@ -29,11 +30,15 @@ run(
       return;
     }
 
-    if (text === "ok" && cache.data) {
+    if (command === "confirm" && cache.data) {
       // execute transaction
       await context.send("Executing your transaction...");
 
-      const result = await brianCDPSDK.transact(cache.data.prompt);
+      const result = await brianCDPSDK.transact(
+        `${cache.data.prompt} on ${await getPreferredChainString(
+          sender.address
+        )}`
+      );
 
       await context.send(
         `Transaction executed successfully: ${result[0].getTransactionLink()}`
@@ -71,7 +76,7 @@ run(
 
       await context.send(data.data.description);
       await context.send(
-        `Send "ok" to confirm your transaction. Any other message will cancel the operation.`
+        `Send "/confirm" to confirm your transaction. Any other message will cancel the operation.`
       );
     }
 
