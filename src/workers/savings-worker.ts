@@ -97,6 +97,8 @@ run(
           " " +
           analysis.tokenSymbol +
           " -- " +
+          analysis.chain +
+          " " +
           analysis.explanation
       );
 

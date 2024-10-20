@@ -76,6 +76,7 @@ export async function analyzeDefiData(
     - The chain must be one of the following: Base, Arbitrum, Optimism
     - The token symbol must be one of the following: USDC, WETH, DAI, WBTC
     - The project name must be one of the following: Compound, AAVE
+    - No ** or any other formatting
     Format the response as a simple list with labels.
   `;
 
