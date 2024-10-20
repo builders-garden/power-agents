@@ -44,3 +44,19 @@ export const getPreferredChain = async (address: string) => {
 
   return data.chain === "base" ? "8453" : "137";
 };
+
+export const getDeposit = async (id: number) => {
+  const { data: deposit } = await supabase
+    .from("deposits")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  const { data: agent } = await supabase
+    .from("agents")
+    .select("*")
+    .eq("id", deposit.agentId)
+    .single();
+
+  return { deposit, agent };
+};
