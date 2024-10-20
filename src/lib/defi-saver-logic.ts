@@ -1,8 +1,7 @@
 import { BrianSDK } from "@brian-ai/sdk";
-import { encodeAbiParameters } from 'viem'
+import { encodeAbiParameters } from "viem";
 
-
-import * as fs from 'fs';
+import * as fs from "fs";
 
 interface DefiDataItem {
   chain: string;
@@ -46,13 +45,17 @@ interface RecommendationResult {
 }
 
 const options = {
-    apiUrl: process.env.BRIAN_API_URL!,
-    apiKey: process.env.BRIAN_API_KEY!,
+  apiUrl: process.env.BRIAN_API_URL!,
+  apiKey: process.env.BRIAN_API_KEY!,
 };
-  
+
 const brian = new BrianSDK(options);
 
-export async function analyzeDefiData(data: DefiData, userPreferencesPrompt: string, amount: number): Promise<AnalysisResult> {
+export async function analyzeDefiData(
+  data: DefiData,
+  userPreferencesPrompt: string,
+  amount: number
+): Promise<AnalysisResult> {
   const prompt = `
     Analyze the following DeFi project data:
     ${JSON.stringify(data.data)}
@@ -83,22 +86,32 @@ export async function analyzeDefiData(data: DefiData, userPreferencesPrompt: str
     }
 
     // Parse the string response into AnalysisResult
-    const lines = response.answer.split('\n').map(line => line.trim());
+    const lines = response.answer.split("\n").map((line) => line.trim());
     const result: Partial<AnalysisResult> = {};
 
     for (const line of lines) {
-      const [key, ...valueParts] = line.split(':').map(part => part.trim());
-      const value = valueParts.join(':').trim();
+      const [key, ...valueParts] = line.split(":").map((part) => part.trim());
+      const value = valueParts.join(":").trim();
 
-      if (key.toLowerCase().includes("project name")) result.projectName = value;
-      else if (key.toLowerCase().includes("chain")) result.chain = value.toLowerCase();
-      else if (key.toLowerCase().includes("token symbol")) result.tokenSymbol = value;
+      if (key.toLowerCase().includes("project name"))
+        result.projectName = value;
+      else if (key.toLowerCase().includes("chain"))
+        result.chain = value.toLowerCase();
+      else if (key.toLowerCase().includes("token symbol"))
+        result.tokenSymbol = value;
       else if (key.toLowerCase().includes("to token")) result.toToken = value;
-      else if (key.toLowerCase().includes("explanation")) result.explanation = value;
+      else if (key.toLowerCase().includes("explanation"))
+        result.explanation = value;
     }
 
     // Validate the parsed response
-    if (!result.projectName || !result.chain || !result.tokenSymbol || !result.toToken || !result.explanation) {
+    if (
+      !result.projectName ||
+      !result.chain ||
+      !result.tokenSymbol ||
+      !result.toToken ||
+      !result.explanation
+    ) {
       console.error("Missing fields in parsed result:", result);
       throw new Error("Incomplete response from Brian");
     }
@@ -111,64 +124,98 @@ export async function analyzeDefiData(data: DefiData, userPreferencesPrompt: str
 }
 
 export function loadDefiData(filePath: string): DefiData {
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
 // Add this new function to demonstrate usage
-export async function getDefiRecommendation(userPreferencesPrompt: string, amount: number): Promise<RecommendationResult> {
-  const defiData = loadDefiData('src/lib/defi-saver-data.json');
-  const analysis = await analyzeDefiData(defiData, userPreferencesPrompt, amount);
+export async function getDefiRecommendation(
+  userPreferencesPrompt: string,
+  amount: number,
+  agentContract: string
+): Promise<RecommendationResult> {
+  const defiData = loadDefiData("src/lib/defi-saver-data.json");
+  const analysis = await analyzeDefiData(
+    defiData,
+    userPreferencesPrompt,
+    amount
+  );
 
-  const isSwap = analysis.chain.toLowerCase() === "base" && analysis.tokenSymbol.toLowerCase() !== "usdc";
-  
-  const swapPrompt = analysis.chain.toLowerCase() === "base" 
-  ? (analysis.tokenSymbol.toLowerCase() === "usdc" ? "" : `swap ${amount} USDC to ${analysis.tokenSymbol} on Base`)
-  : `bridge ${amount} USDC to ${analysis.tokenSymbol} from Base to ${analysis.chain}`;
+  const isSwap =
+    analysis.chain.toLowerCase() === "base" &&
+    analysis.tokenSymbol.toLowerCase() !== "usdc";
+
+  const swapPrompt =
+    analysis.chain.toLowerCase() === "base"
+      ? analysis.tokenSymbol.toLowerCase() === "usdc"
+        ? ""
+        : `swap ${amount} USDC to ${analysis.tokenSymbol} on Base with ${agentContract} as a receiver`
+      : `bridge ${amount} USDC to ${analysis.tokenSymbol} from Base to ${analysis.chain} with ${agentContract} as a receiver`;
 
   const newAmount = amount * 0.8;
 
   const depositPrompt = `deposit ${newAmount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
 
-  return { analysis, swapPrompt, depositPrompt, isSwap, destinationChain: analysis.chain.toLowerCase() };
+  return {
+    analysis,
+    swapPrompt,
+    depositPrompt,
+    isSwap,
+    destinationChain: analysis.chain.toLowerCase(),
+  };
 }
 
 // Get transaction data
-export async function getTransactionDataFromBrian(prompt: string, agentAddress: string){
-    //get prompt from txDataInput
-    const response = await brian.transact({
-        prompt: prompt,
-        address: agentAddress,
-    })
+export async function getTransactionDataFromBrian(
+  prompt: string,
+  agentAddress: string
+) {
+  //get prompt from txDataInput
+  const response = await brian.transact({
+    prompt: prompt,
+    address: agentAddress,
+  });
 
-    //array of txData
-    let txData: string[] = [];
-    let txValues: string[] = [];
-    let txTo: string[] = [];
+  //array of txData
+  let txData: string[] = [];
+  let txValues: string[] = [];
+  let txTo: string[] = [];
 
-    //get length of steps
-    const txDataLength = response[0].data.steps!.length;
+  //get length of steps
+  const txDataLength = response[0].data.steps!.length;
 
-    //push in the array
-    for (let i = 0; i < txDataLength; i++) {
-        txData.push(response[0].data.steps![i].data);
-        txValues.push(response[0].data.steps![i].value);
-        txTo.push(response[0].data.steps![i].to);
-    }
+  //push in the array
+  for (let i = 0; i < txDataLength; i++) {
+    txData.push(response[0].data.steps![i].data);
+    txValues.push(response[0].data.steps![i].value);
+    txTo.push(response[0].data.steps![i].to);
+  }
 
-    return {txData, txValues, txTo};
+  return { txData, txValues, txTo };
 }
 
 //Build Layer Zero transaction
-export async function buildLayerZeroTransaction(txData: string[], txValues: string[], txTo: string[]){
-    let l0Tx: `0x${string}`[] = [];
-    for (let i = 0; i < txData.length; i++) {
-        const encoded = encodeAbiParameters(
-            [{type: 'address', name: 'target'}, {type: 'bytes', name: 'callData'}, {type: 'uint256', name: 'value'}],
-            [txTo[i] as `0x${string}`, txData[i] as `0x${string}`, BigInt(txValues[i])]
-        );
-        l0Tx.push(encoded);
-    }
-    return l0Tx;
+export async function buildLayerZeroTransaction(
+  txData: string[],
+  txValues: string[],
+  txTo: string[]
+) {
+  let l0Tx: `0x${string}`[] = [];
+  for (let i = 0; i < txData.length; i++) {
+    const encoded = encodeAbiParameters(
+      [
+        { type: "address", name: "target" },
+        { type: "bytes", name: "callData" },
+        { type: "uint256", name: "value" },
+      ],
+      [
+        txTo[i] as `0x${string}`,
+        txData[i] as `0x${string}`,
+        BigInt(txValues[i]),
+      ]
+    );
+    l0Tx.push(encoded);
+  }
+  return l0Tx;
 }
 
 //TODO: add crosshchain swap/bridge before deposit

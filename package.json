@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@brian-ai/cdp-sdk": "^1.0.2",
+    "@brian-ai/cdp-sdk": "1.0.6",
     "@coinbase/coinbase-sdk": "^0.9.1",
     "@layerzerolabs/lz-v2-utilities": "^3.0.6",
     "@lifi/sdk": "^3.3.0",

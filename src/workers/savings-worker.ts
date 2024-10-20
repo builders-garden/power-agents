@@ -6,13 +6,15 @@ import {
   getTransactionDataFromBrian,
 } from "../lib/defi-saver-logic.js";
 import { BrianCoinbaseSDK } from "@brian-ai/cdp-sdk";
-import { AGENT_CONTRACT_ABI } from "../lib/abi.js";
 import {
   L0_CHAIN_ID_ARBITRUM,
   L0_CHAIN_ID_OPTIMISM,
 } from "../lib/constants.js";
 import { Options } from "@layerzerolabs/lz-v2-utilities";
-import { Coinbase } from "@coinbase/coinbase-sdk";
+import { privateKeyToAccount } from "viem/accounts";
+import { createPublicClient, createWalletClient, http } from "viem";
+import { base } from "viem/chains";
+import { AGENT_CONTRACT_ABI } from "../lib/abi.js";
 
 const {
   privateKey,
@@ -20,6 +22,7 @@ const {
   mpcData,
   address,
   agentContract,
+  seed,
 } = workerData;
 
 run(
@@ -61,11 +64,14 @@ run(
       let l0Transaction;
       //get recommendation from Brian
       const { analysis, depositPrompt, swapPrompt, isSwap, destinationChain } =
-        await getDefiRecommendation(description, amount);
+        await getDefiRecommendation(description, amount, agentContract);
+
+      await context.send(analysis.explanation);
 
       console.log("[savings-worker] depositPrompt", depositPrompt);
       console.log("[savings-worker] swapPrompt", swapPrompt);
       console.log("[savings-worker] isSwap", isSwap);
+      console.log("[savings-worker] destinationChain", destinationChain);
 
       // // Check balance
       // const publicClient = createPublicClient({
@@ -106,7 +112,7 @@ run(
       if (swapPrompt !== "" && !isSwap) {
         console.log("[savings-worker] cross chain swap");
         //cross chain swap from Base and deposit on destination chain
-        const swapResult = await brianCDPSDK.transact(swapPrompt);
+        // const swapResult = await brianCDPSDK.transact(swapPrompt);
         console.log("[savings-worker] cross chain swap executed.");
 
         let hasBalance = false;
@@ -119,8 +125,8 @@ run(
                 : analysis.chain.toLowerCase() === "polygon"
                 ? "137"
                 : "42161",
-            prompt: `What is the ${analysis.toToken} balance of ${address}?`,
-            address: address,
+            prompt: `What is the ${analysis.tokenSymbol} balance of ${agentContract}?`,
+            address: agentContract,
           });
 
           const balanceAmount = parseFloat(
@@ -130,7 +136,7 @@ run(
               .replace("$", "")
           );
 
-          if (balanceAmount > parseFloat(amount)) {
+          if (balanceAmount > parseFloat(amount) * 0.8) {
             hasBalance = true;
           }
           // wait 30 seconds
@@ -141,20 +147,21 @@ run(
         //prendere tx da brian
         const { txData, txTo, txValues } = await getTransactionDataFromBrian(
           depositPrompt,
-          address
+          agentContract
         );
 
-        console.log("[savings-worker] brian tx data.", txData, txTo, txValues);
-
         //encode messages: approve + deposit
-        const [l0Tx] = await buildLayerZeroTransaction(txData, txValues, txTo);
+        const messages = await buildLayerZeroTransaction(
+          txData,
+          txValues,
+          txTo
+        );
 
-        const messages = [l0Tx];
+        // const messages = [l0Tx];
 
-        const dstEids =
-          destinationChain.toLowerCase() === "arbitrum"
-            ? [Number(L0_CHAIN_ID_ARBITRUM), Number(L0_CHAIN_ID_ARBITRUM)]
-            : [Number(L0_CHAIN_ID_OPTIMISM), Number(L0_CHAIN_ID_OPTIMISM)];
+        const dstEids = destinationChain.toLowerCase().includes("arbitrum")
+          ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
+          : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
 
         const GAS_LIMIT = 1000000; // Gas limit for the executor
         const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
@@ -167,20 +174,48 @@ run(
         //send args for cdp
         const sendArgs = {
           _dstEids: dstEids,
-          _msgType: 1, //SEND
+          _msgType: "1", //SEND
           _messages: messages,
-          _extraSendOptions: options,
+          _extraSendOptions: options.toHex(),
         };
 
+        console.log("[savings-worker] sendArgs", sendArgs);
+
         //first message is the approve
-        const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
-          contractAddress: agentContract,
-          method: "send",
-          abi: AGENT_CONTRACT_ABI,
-          args: sendArgs,
-          amount: 0,
-          assetId: Coinbase.assets.Wei,
+        // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
+        //   contractAddress: agentContract,
+        //   method: "send",
+        //   abi: AGENT_CONTRACT_ABI,
+        //   args: sendArgs,
+        //   amount: 0,
+        //   assetId: Coinbase.assets.Wei,
+        // });
+        const wallet = privateKeyToAccount(seed);
+
+        const walletClient = createWalletClient({
+          account: wallet,
+          chain: base,
+          transport: http(),
         });
+
+        const l0Transaction = await walletClient.writeContract({
+          abi: AGENT_CONTRACT_ABI,
+          functionName: "send",
+          address: agentContract,
+          args: [
+            sendArgs._dstEids.map((item) => parseInt(item)),
+            parseInt(sendArgs._msgType),
+            sendArgs._messages,
+            sendArgs._extraSendOptions as `0x${string}`,
+          ],
+        });
+
+        const publicClient = createPublicClient({
+          transport: http(),
+          chain: base,
+        });
+
+        await publicClient.waitForTransactionReceipt({ hash: l0Transaction });
       }
       await context.send(
         `Deposit transaction executed successfully: ${l0Transaction!.getTransactionLink()}`
