@@ -254,6 +254,130 @@ run(
         );
       }
     }
-  },
+    if (command === "withdraw") {
+      const { id } = params;
+      /*
+      if (!id) {
+        await context.send("You must provide an id to withdraw.");
+      }
+      if (!description) {
+        await context.send(
+          "You must provide a textual description of your risk/return preference."
+        );
+      }*/
+      
+      //build prompt for withdraw
+      const withdrawPrompt = `Withdraw ${amount} ${tokenSymbol} from ${projectName} on ${chain}`;
+
+      //withdraw tx from Brian
+      const {
+        txData: withdrawTxData,
+        txTo: withdrawTxTo,
+        txValues: withdrawTxValues,
+      } = await getTransactionDataFromBrian(withdrawPrompt, agentContract);
+
+      //crosschain swap from Brian
+      const crosschainSwapPrompt = `Bridge ${amount} ${tokenSymbol} to USDC from ${chain} to Base`;
+
+      //get crosschain swap tx from Brian
+      const {
+        txData: crosschainSwapTxData,
+        txTo: crosschainSwapTxTo,
+        txValues: crosschainSwapTxValues,
+      } = await getTransactionDataFromBrian(crosschainSwapPrompt, agentContract);
+
+      //get composed parameters appending the two txs data
+      const composedTxData = withdrawTxData.concat(crosschainSwapTxData);
+      const composedTxTo = withdrawTxTo.concat(crosschainSwapTxTo);
+      const composedTxValues = withdrawTxValues.concat(crosschainSwapTxValues);
+
+      //encode messages: approve + deposit
+      const messages = await buildLayerZeroTransaction(
+        composedTxData,
+        composedTxValues,
+        composedTxTo
+      );
+
+      const publicClient = createPublicClient({
+          transport: http(),
+          chain: base,
+        });
+        // const messages = [l0Tx];
+
+      const dstEids = chain.toLowerCase().includes("arbitrum")
+          ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
+          : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
+
+      const GAS_LIMIT = 1000000; // Gas limit for the executor
+      const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
+
+      const options = Options.newOptions().addExecutorLzReceiveOption(
+        GAS_LIMIT,
+        MSG_VALUE
+      );
+
+        //send args for cdp
+        const sendArgs = {
+          _dstEids: dstEids,
+          _msgType: "1", //SEND
+          _messages: messages,
+          _extraSendOptions: options.toHex(),
+        };
+
+        //quote fee
+        const quoteFee = await publicClient.readContract({
+          abi: AGENT_CONTRACT_ABI,
+          functionName: "quote",
+          address: agentContract,
+          args: [
+            sendArgs._dstEids.map((item) => Number(item)),
+            1,
+            sendArgs._messages,
+            sendArgs._extraSendOptions as `0x${string}`,
+            false,
+          ],
+        });
+
+        console.log("[savings-worker] sendArgs", sendArgs);
+
+        //first message is the approve
+        // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
+        //   contractAddress: agentContract,
+        //   method: "send",
+        //   abi: AGENT_CONTRACT_ABI,
+        //   args: sendArgs,
+        //   amount: 0,
+        //   assetId: Coinbase.assets.Wei,
+        // });
+        const wallet = privateKeyToAccount(seed);
+
+        const walletClient = createWalletClient({
+          account: wallet,
+          chain: base,
+          transport: http(),
+        });
+
+        const l0Transaction = await walletClient.writeContract({
+          abi: AGENT_CONTRACT_ABI,
+          functionName: "send",
+          address: agentContract,
+          args: [
+            sendArgs._dstEids.map((item) => parseInt(item)),
+            parseInt(sendArgs._msgType),
+            sendArgs._messages,
+            sendArgs._extraSendOptions as `0x${string}`,
+          ],
+          value: quoteFee.nativeFee,
+        });
+
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash: l0Transaction,
+        });
+
+        await context.send(
+          `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+        );
+      }
+    },
   { privateKey }
 );
