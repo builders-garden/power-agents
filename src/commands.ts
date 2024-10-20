@@ -183,6 +183,12 @@ export const commands: CommandGroup[] = [
     name: "Info",
     triggers: ["@info", "/info"],
     description: "Shows information about the bot.",
-    commands: [],
+    commands: [
+      {
+        command: "/info",
+        description: "Shows information about the bot.",
+        params: {},
+      },
+    ],
   },
 ];

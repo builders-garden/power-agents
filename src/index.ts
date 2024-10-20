@@ -38,7 +38,28 @@ run(async (context: HandlerContext) => {
 
     if (command === "info") {
       await context.send(
-        "I'm a bot that can create agents for you. To create a new agent, use the command /new [type] [name]. Available types: brian, savings, recurring, limit."
+        "I'm the Power Agents bot. You can create multiple agents through me and interact with them in this chat. To create a new agent, use the command /new."
+      );
+      await context.send(
+        "The command /new takes two parameters: type and name. The type parameter specifies the type of agent you want to create (brian, trader, recurring, limit). The name parameter specifies the name of the agent."
+      );
+      await context.send(
+        "The name parameter will be used to create a subdomain in the form {name}.poweragents.eth, which you can use to interact with your agent."
+      );
+      await context.send(
+        "These are the various types of agents you can create:"
+      );
+      await context.send(
+        "1. Brian: An agent that can interact with the Brian API to perform various tasks such as searching information or perform basic operations (swaps, bridging, transfers, etc)."
+      );
+      await context.send(
+        "2. Limit: An agent that will manage limit orders for you. You can create a limit order by providing a prompt, token address, and price."
+      );
+      await context.send(
+        "3. Recurring: An agent that will execute a transaction at a specified interval. You can create a recurring transaction by providing a prompt and interval."
+      );
+      await context.send(
+        "4. Savings: An agent that will allow you to deposit funds and earn interest on Base, Arbitrum or Optimism based on the best current market conditions (powered by LayerZero)."
       );
       return;
     }
@@ -219,23 +240,23 @@ run(async (context: HandlerContext) => {
     if (command === "chain") {
       const { chain } = params;
 
-      if (!chain || !["base", "polygon"].includes(chain)) {
+      if (!chain || !["base", "polygon"].includes(chain.toLowerCase())) {
         await context.send(
-          "To switch to a different chain, you must provide the chain name. Available chains: base, polygon."
+          "You must provide a valid chain. Available chains: base, polygon."
         );
         return;
       }
 
       await supabase
         .from("preferences")
-        .upsert({ address: sender.address, chain });
+        .upsert({ address: sender.address, chain: chain.toLowerCase() });
 
-      await context.send("Chain preference updated successfully.");
+      await context.send(`You're now connected to ${chain.toLowerCase()}.`);
     }
   } catch (error) {
     console.error(`[🚨 new-message] error: ${error}`);
     await context.send(
-      `An error occurred while processing your message: ${error}`
+      `An error occurred while processing your message. Please try again.`
     );
   }
 });
