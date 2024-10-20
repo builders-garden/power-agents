@@ -192,6 +192,28 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Invest",
+    triggers: ["@invest", "/invest"],
+    description: "Invests a given amount of money.",
+    commands: [
+      {
+        command: "/invest [amount] [description]",
+        description: "Invests a given amount of money.",
+        params: {
+          amount: {
+            type: "number",
+            default: 0,
+          },
+          description: {
+            type: "string",
+            default:
+              "I prefer low-risk investments with stable returns. I'm interested in stablecoin pools.",
+          },
+        },
+      },
+    ],
+  },
+  {
     name: "Info",
     triggers: ["@info", "/info"],
     description: "Shows information about the bot.",
