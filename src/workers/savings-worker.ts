@@ -224,22 +224,22 @@ run(
         //   transport: http(),
         // });
 
-        // // const l0Transaction = await walletClient.writeContract({
-        // //   abi: AGENT_CONTRACT_ABI,
-        // //   functionName: "send",
-        // //   address: agentContract,
-        // //   args: [
-        // //     sendArgs._dstEids.map((item) => parseInt(item)),
-        // //     parseInt(sendArgs._msgType),
-        // //     sendArgs._messages,
-        // //     sendArgs._extraSendOptions as `0x${string}`,
-        // //   ],
-        // //   value: quoteFee.nativeFee,
-        // // });
+        // const l0Transaction = await walletClient.writeContract({
+        //   abi: AGENT_CONTRACT_ABI,
+        //   functionName: "send",
+        //   address: agentContract,
+        //   args: [
+        //     sendArgs._dstEids.map((item) => parseInt(item)),
+        //     parseInt(sendArgs._msgType),
+        //     sendArgs._messages,
+        //     sendArgs._extraSendOptions as `0x${string}`,
+        //   ],
+        //   value: quoteFee.nativeFee,
+        // });
 
-        // // const receipt = await publicClient.waitForTransactionReceipt({
-        // //   hash: l0Transaction,
-        // // });
+        // const receipt = await publicClient.waitForTransactionReceipt({
+        //   hash: l0Transaction,
+        // });
 
         await supabase.from("deposits").insert({
           agentId: id,
