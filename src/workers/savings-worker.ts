@@ -15,6 +15,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { base } from "viem/chains";
 import { AGENT_CONTRACT_ABI } from "../lib/abi.js";
+import { supabase } from "../lib/supabase.js";
 
 const {
   privateKey,
@@ -23,6 +24,7 @@ const {
   address,
   agentContract,
   seed,
+  id,
 } = workerData;
 
 run(
@@ -237,6 +239,14 @@ run(
 
         const receipt = await publicClient.waitForTransactionReceipt({
           hash: l0Transaction,
+        });
+
+        await supabase.from("deposits").insert({
+          agentId: id,
+          amount: amount * 0.8,
+          chain: destinationChain,
+          token: analysis.tokenSymbol,
+          protocol: analysis.projectName,
         });
 
         await context.send(
