@@ -1,3 +1,4 @@
+// Agent Contract
 export const AGENT_CONTRACT_ABI = [
 	{
 		"inputs": [
@@ -763,7 +764,7 @@ export const AGENT_CONTRACT_ABI = [
 	}
 ] as const;
 
-
+// Agent Factory
 export const AGENT_FACTORY_ABI = [
 	{
 		"anonymous": false,

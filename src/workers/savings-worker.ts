@@ -167,7 +167,7 @@ run(
         //send args for cdp
         const sendArgs = {
           _dstEids: dstEids,
-          _msgType: 1,
+          _msgType: 1, //SEND
           _messages: messages,
           _extraSendOptions: options,
         };
