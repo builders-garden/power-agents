@@ -214,6 +214,35 @@ export const commands: CommandGroup[] = [
     ],
   },
   {
+    name: "Withdraw",
+    triggers: ["@withdraw", "/withdraw"],
+    description: "Withdraws a given amount of money from a deposit.",
+    commands: [
+      {
+        command: "/withdraw [id]",
+        description: "Withdraws a given amount of money from a deposit.",
+        params: {
+          id: {
+            type: "number",
+            default: 0,
+          },
+        },
+      },
+    ],
+  },
+  {
+    name: "List deposits",
+    triggers: ["@deposits", "/deposits"],
+    description: "Lists all the deposits.",
+    commands: [
+      {
+        command: "/deposits",
+        description: "Lists all the deposits.",
+        params: {},
+      },
+    ],
+  },
+  {
     name: "Info",
     triggers: ["@info", "/info"],
     description: "Shows information about the bot.",
