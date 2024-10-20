@@ -167,7 +167,6 @@ run(
           transport: http(),
           chain: base,
         });
-ƒ
         // const messages = [l0Tx];
 
         const dstEids = destinationChain.toLowerCase().includes("arbitrum")
@@ -236,11 +235,14 @@ run(
           value: quoteFee.nativeFee,
         });
 
-        await publicClient.waitForTransactionReceipt({ hash: l0Transaction });
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash: l0Transaction,
+        });
+
+        await context.send(
+          `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+        );
       }
-      await context.send(
-        `Deposit transaction executed successfully: ${l0Transaction!.getTransactionLink()}`
-      );
     }
   },
   { privateKey }
