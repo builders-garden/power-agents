@@ -199,8 +199,8 @@ run(
         });
 
         const dstEids = destinationChain.toLowerCase().includes("arbitrum")
-          ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
-          : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
+          ? messages.map(() => L0_CHAIN_ID_ARBITRUM.toString())
+          : messages.map(() => L0_CHAIN_ID_OPTIMISM.toString());
 
         const GAS_LIMIT = 1000000; // Gas limit for the executor
         const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
@@ -276,7 +276,7 @@ run(
         });
 
         await context.send(
-          `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+          `Deposit transaction executed successfully: https://layerzeroscan.com/tx/${receipt.transactionHash}`
         );
       }
     }
@@ -321,8 +321,6 @@ run(
           txValues: withdrawTxValues,
         } = await getTransactionDataFromBrian(withdrawPrompt, agentContract);
 
-        console.log("[savings-worker] withdrawTxData", withdrawTxData);
-
         //crosschain swap from Brian
         const crosschainSwapPrompt = `Bridge ${withdrawAmount} ${deposit.token} to USDC from ${deposit.chain} to Base with ${address} as a receiver`;
 
@@ -357,8 +355,8 @@ run(
         // const messages = [l0Tx];
 
         const dstEids = deposit.chain.toLowerCase().includes("arbitrum")
-          ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
-          : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
+          ? messages.map(() => L0_CHAIN_ID_ARBITRUM.toString())
+          : messages.map(() => L0_CHAIN_ID_OPTIMISM.toString());
 
         const GAS_LIMIT = 1000000; // Gas limit for the executor
         const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
@@ -389,8 +387,6 @@ run(
             false,
           ],
         });
-
-        console.log("[savings-worker] sendArgs", sendArgs);
 
         //first message is the approve
         // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
@@ -428,7 +424,7 @@ run(
         });
 
         await context.send(
-          `Withdraw  transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+          `Withdraw transaction executed successfully: https://layerzeroscan.com/tx/${receipt.transactionHash}`
         );
         await supabase.from("deposits").delete().eq("id", depositId);
       }
