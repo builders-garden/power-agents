@@ -169,7 +169,6 @@ run(
           transport: http(),
           chain: base,
         });
-        // const messages = [l0Tx];
 
         const dstEids = destinationChain.toLowerCase().includes("arbitrum")
           ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
@@ -256,128 +255,146 @@ run(
     }
     if (command === "withdraw") {
       const { id } = params;
-      /*
+
+      const parameters = await supabase
+        .from("deposits")
+        .select("amount, token, protocol, chain")
+        .eq("agentId", id)
+        .single();
+
       if (!id) {
-        await context.send("You must provide an id to withdraw.");
+        await context.send("Invalid deposit id.");
       }
-      if (!description) {
+
+      if (parameters.data?.chain.toLowerCase() === "base") {
+        const withdrawPrompt = `Withdraw ${parameters.data?.amount} ${parameters.data?.token} from ${parameters.data?.protocol} on Base`;
+        const withdrawTx = await brianCDPSDK.transact(withdrawPrompt);
         await context.send(
-          "You must provide a textual description of your risk/return preference."
+          `Withdraw transaction executed successfully: ${withdrawTx}` //TODO: add link
         );
-      }*/
-      
-      //build prompt for withdraw
-      const withdrawPrompt = `Withdraw ${amount} ${tokenSymbol} from ${projectName} on ${chain}`;
+        //if the token received is not USDC, then perform a swap
+        if (parameters.data?.token.toLowerCase() !== "usdc") {
+          const swapPrompt = `Swap ${parameters.data?.amount} ${parameters.data?.token} to USDC on Base`;
+          const swapTx = await brianCDPSDK.transact(swapPrompt);
+          await context.send(
+            `Swap transaction executed successfully: ${swapTx}` //TODO: add link
+          );
+        }
+      } else {
 
-      //withdraw tx from Brian
-      const {
-        txData: withdrawTxData,
-        txTo: withdrawTxTo,
-        txValues: withdrawTxValues,
-      } = await getTransactionDataFromBrian(withdrawPrompt, agentContract);
+        //build prompt for withdraw
+        const withdrawPrompt = `Withdraw ${parameters.data?.amount} ${parameters.data?.token} from ${parameters.data?.protocol} on ${parameters.data?.chain}`;
 
-      //crosschain swap from Brian
-      const crosschainSwapPrompt = `Bridge ${amount} ${tokenSymbol} to USDC from ${chain} to Base`;
+        //withdraw tx from Brian
+        const {
+          txData: withdrawTxData,
+          txTo: withdrawTxTo,
+          txValues: withdrawTxValues,
+        } = await getTransactionDataFromBrian(withdrawPrompt, agentContract);
 
-      //get crosschain swap tx from Brian
-      const {
-        txData: crosschainSwapTxData,
-        txTo: crosschainSwapTxTo,
-        txValues: crosschainSwapTxValues,
-      } = await getTransactionDataFromBrian(crosschainSwapPrompt, agentContract);
+        //crosschain swap from Brian
+        const crosschainSwapPrompt = `Bridge ${parameters.data?.amount} ${parameters.data?.token} to USDC from ${parameters.data?.chain} to Base`;
 
-      //get composed parameters appending the two txs data
-      const composedTxData = withdrawTxData.concat(crosschainSwapTxData);
-      const composedTxTo = withdrawTxTo.concat(crosschainSwapTxTo);
-      const composedTxValues = withdrawTxValues.concat(crosschainSwapTxValues);
+        //get crosschain swap tx from Brian
+        const {
+          txData: crosschainSwapTxData,
+          txTo: crosschainSwapTxTo,
+          txValues: crosschainSwapTxValues,
+        } = await getTransactionDataFromBrian(crosschainSwapPrompt, agentContract);
 
-      //encode messages: approve + deposit
-      const messages = await buildLayerZeroTransaction(
-        composedTxData,
-        composedTxValues,
-        composedTxTo
-      );
+        //get composed parameters appending the two txs data
+        const composedTxData = withdrawTxData.concat(crosschainSwapTxData);
+        const composedTxTo = withdrawTxTo.concat(crosschainSwapTxTo);
+        const composedTxValues = withdrawTxValues.concat(crosschainSwapTxValues);
 
-      const publicClient = createPublicClient({
+        //encode messages: approve + deposit
+        const messages = await buildLayerZeroTransaction(
+          composedTxData,
+          composedTxValues,
+          composedTxTo
+        );
+
+        const publicClient = createPublicClient({
           transport: http(),
           chain: base,
         });
-        // const messages = [l0Tx];
+          // const messages = [l0Tx];
 
-      const dstEids = chain.toLowerCase().includes("arbitrum")
-          ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
-          : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
+        const dstEids = parameters.data?.chain.toLowerCase().includes("arbitrum")
+            ? [L0_CHAIN_ID_ARBITRUM.toString(), L0_CHAIN_ID_ARBITRUM.toString()]
+            : [L0_CHAIN_ID_OPTIMISM.toString(), L0_CHAIN_ID_OPTIMISM.toString()];
 
-      const GAS_LIMIT = 1000000; // Gas limit for the executor
-      const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
+        const GAS_LIMIT = 1000000; // Gas limit for the executor
+        const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
 
-      const options = Options.newOptions().addExecutorLzReceiveOption(
-        GAS_LIMIT,
-        MSG_VALUE
-      );
+        const options = Options.newOptions().addExecutorLzReceiveOption(
+          GAS_LIMIT,
+          MSG_VALUE
+        );
 
         //send args for cdp
         const sendArgs = {
           _dstEids: dstEids,
-          _msgType: "1", //SEND
-          _messages: messages,
-          _extraSendOptions: options.toHex(),
-        };
+            _msgType: "1", //SEND
+            _messages: messages,
+            _extraSendOptions: options.toHex(),
+          };
 
         //quote fee
         const quoteFee = await publicClient.readContract({
           abi: AGENT_CONTRACT_ABI,
-          functionName: "quote",
-          address: agentContract,
-          args: [
-            sendArgs._dstEids.map((item) => Number(item)),
-            1,
-            sendArgs._messages,
-            sendArgs._extraSendOptions as `0x${string}`,
-            false,
-          ],
-        });
+            functionName: "quote",
+            address: agentContract,
+            args: [
+              sendArgs._dstEids.map((item) => Number(item)),
+              1,
+              sendArgs._messages,
+              sendArgs._extraSendOptions as `0x${string}`,
+              false,
+            ],
+          });
 
         console.log("[savings-worker] sendArgs", sendArgs);
 
         //first message is the approve
-        // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
-        //   contractAddress: agentContract,
-        //   method: "send",
-        //   abi: AGENT_CONTRACT_ABI,
-        //   args: sendArgs,
-        //   amount: 0,
-        //   assetId: Coinbase.assets.Wei,
-        // });
-        const wallet = privateKeyToAccount(seed);
+          // const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
+          //   contractAddress: agentContract,
+          //   method: "send",
+          //   abi: AGENT_CONTRACT_ABI,
+          //   args: sendArgs,
+          //   amount: 0,
+          //   assetId: Coinbase.assets.Wei,
+          // });
+          const wallet = privateKeyToAccount(seed);
 
-        const walletClient = createWalletClient({
-          account: wallet,
-          chain: base,
-          transport: http(),
-        });
+          const walletClient = createWalletClient({
+            account: wallet,
+            chain: base,
+            transport: http(),
+          });
 
-        const l0Transaction = await walletClient.writeContract({
-          abi: AGENT_CONTRACT_ABI,
-          functionName: "send",
-          address: agentContract,
-          args: [
-            sendArgs._dstEids.map((item) => parseInt(item)),
-            parseInt(sendArgs._msgType),
-            sendArgs._messages,
-            sendArgs._extraSendOptions as `0x${string}`,
-          ],
-          value: quoteFee.nativeFee,
-        });
+          const l0Transaction = await walletClient.writeContract({
+            abi: AGENT_CONTRACT_ABI,
+            functionName: "send",
+            address: agentContract,
+            args: [
+              sendArgs._dstEids.map((item) => parseInt(item)),
+              parseInt(sendArgs._msgType),
+              sendArgs._messages,
+              sendArgs._extraSendOptions as `0x${string}`,
+            ],
+            value: quoteFee.nativeFee,
+          });
 
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash: l0Transaction,
-        });
+          const receipt = await publicClient.waitForTransactionReceipt({
+            hash: l0Transaction,
+          });
 
-        await context.send(
-          `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
-        );
+          await context.send(
+            `Deposit transaction executed successfully: https://basescan.org/tx/${receipt.transactionHash}`
+          );
       }
-    },
+    }
+  },
   { privateKey }
 );
