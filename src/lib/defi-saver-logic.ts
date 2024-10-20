@@ -72,6 +72,10 @@ export async function analyzeDefiData(
     4. To Token
     5. A brief explanation of why this option is recommended, considering the user's preferences and the amount to invest.
 
+    Rules:
+    - The chain must be one of the following: Base, Arbitrum, Optimism
+    - The token symbol must be one of the following: USDC, WETH, DAI, WBTC
+    - The project name must be one of the following: Compound, AAVE
     Format the response as a simple list with labels.
   `;
 
