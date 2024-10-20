@@ -65,19 +65,49 @@ export async function analyzeDefiData(data: DefiData, userPreferencesPrompt: str
     Provide the following information for the best option, it's mandatory to provide all of them:
     1. Project name
     2. Chain
-     3. Token symbol
+    3. Token symbol
     4. To Token
     5. A brief explanation of why this option is recommended, considering the user's preferences and the amount to invest.
 
-    Format the response as JSON.
+    Format the response as a simple list with labels.
   `;
 
-  const response = await brian.ask({
-    prompt: prompt,
-    kb: "public-knowledge-box",
-  });
+  try {
+    const response = await brian.ask({
+      prompt: prompt,
+      kb: "public-knowledge-box",
+    });
 
-  return JSON.parse(response.answer || '{}') as AnalysisResult;
+    if (!response.answer) {
+      throw new Error("Empty response from Brian");
+    }
+
+    // Parse the string response into AnalysisResult
+    const lines = response.answer.split('\n').map(line => line.trim());
+    const result: Partial<AnalysisResult> = {};
+
+    for (const line of lines) {
+      const [key, ...valueParts] = line.split(':').map(part => part.trim());
+      const value = valueParts.join(':').trim();
+
+      if (key.toLowerCase().includes("project name")) result.projectName = value;
+      else if (key.toLowerCase().includes("chain")) result.chain = value.toLowerCase();
+      else if (key.toLowerCase().includes("token symbol")) result.tokenSymbol = value;
+      else if (key.toLowerCase().includes("to token")) result.toToken = value;
+      else if (key.toLowerCase().includes("explanation")) result.explanation = value;
+    }
+
+    // Validate the parsed response
+    if (!result.projectName || !result.chain || !result.tokenSymbol || !result.toToken || !result.explanation) {
+      console.error("Missing fields in parsed result:", result);
+      throw new Error("Incomplete response from Brian");
+    }
+
+    return result as AnalysisResult;
+  } catch (error) {
+    console.error("Error in analyzeDefiData:", error);
+    throw error;
+  }
 }
 
 export function loadDefiData(filePath: string): DefiData {
@@ -86,7 +116,7 @@ export function loadDefiData(filePath: string): DefiData {
 
 // Add this new function to demonstrate usage
 export async function getDefiRecommendation(userPreferencesPrompt: string, amount: number): Promise<RecommendationResult> {
-  const defiData = loadDefiData('./defi-saver-data.json');
+  const defiData = loadDefiData('src/lib/defi-saver-data.json');
   const analysis = await analyzeDefiData(defiData, userPreferencesPrompt, amount);
 
   const isSwap = analysis.chain.toLowerCase() === "base" && analysis.tokenSymbol.toLowerCase() !== "usdc";
@@ -97,7 +127,7 @@ export async function getDefiRecommendation(userPreferencesPrompt: string, amoun
 
   const depositPrompt = `deposit ${amount} ${analysis.tokenSymbol} on ${analysis.projectName} on ${analysis.chain}`;
 
-  return { analysis, swapPrompt, depositPrompt, isSwap, destinationChain: analysis.chain };
+  return { analysis, swapPrompt, depositPrompt, isSwap, destinationChain: analysis.chain.toLowerCase() };
 }
 
 // Get transaction data

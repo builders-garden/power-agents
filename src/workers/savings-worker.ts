@@ -115,8 +115,8 @@ run(
 
         const dstEids =
           destinationChain.toLowerCase() === "arbitrum"
-            ? [L0_CHAIN_ID_ARBITRUM, L0_CHAIN_ID_ARBITRUM]
-            : [L0_CHAIN_ID_OPTIMISM, L0_CHAIN_ID_OPTIMISM];
+            ? [Number(L0_CHAIN_ID_ARBITRUM), Number(L0_CHAIN_ID_ARBITRUM)]
+            : [Number(L0_CHAIN_ID_OPTIMISM), Number(L0_CHAIN_ID_OPTIMISM)];
 
         const GAS_LIMIT = 1000000; // Gas limit for the executor
         const MSG_VALUE = 0; // msg.value for the lzReceive() function on destination in wei
@@ -129,14 +129,14 @@ run(
         //send args for cdp
         const sendArgs = {
           _dstEids: dstEids,
-          _msgType: "SEND",
+          _msgType: 1,
           _messages: messages,
           _extraSendOptions: options,
         };
 
         //first message is the approve
         const l0Transaction = await brianCDPSDK.currentWallet?.invokeContract({
-          contractAddress: agentContract, //TODO: change
+          contractAddress: agentContract, 
           method: "send",
           abi: AGENT_CONTRACT_ABI,
           args: sendArgs,
